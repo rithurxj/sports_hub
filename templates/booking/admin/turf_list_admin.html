@@ -1,0 +1,80 @@
+{% extends "booking/base.html" %}
+{% load static %}
+
+{% block title %}Manage Turfs | Sports Hub Admin{% endblock %}
+
+{% block content %}
+<section class="section" style="padding-top: 40px;">
+    <div class="container">
+        <div class="section-title-wrap">
+            <div>
+                <span class="section-eyebrow">TURF MANAGEMENT</span>
+                <h1 class="section-title">Manage Sports Grounds</h1>
+                <p class="section-subtitle">Configure ground details, surface types, prices, and availability.</p>
+            </div>
+            <a class="btn btn-primary" href="{% url 'admin_turf_add' %}">+ Add New Ground</a>
+        </div>
+
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Ground Name</th>
+                        <th>Sport Type</th>
+                        <th>Location</th>
+                        <th>Rate / Slot</th>
+                        <th>Surface</th>
+                        <th>Bookings</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for turf in turfs %}
+                    <tr>
+                        <td>
+                            <strong>{{ turf.name }}</strong>
+                            <div style="font-size: 12px; color: #64748b;">Contact: {{ turf.contact_number }}</div>
+                        </td>
+                        <td>
+                            <span class="role-badge role-customer">
+                                {{ turf.sport_icon }} {{ turf.get_sport_type_display }}
+                            </span>
+                        </td>
+                        <td>{{ turf.location }}</td>
+                        <td><strong>₹{{ turf.price|floatformat:0 }}</strong></td>
+                        <td><span class="turf-surface-pill" style="margin: 0;">{{ turf.surface_type }}</span></td>
+                        <td>{{ turf.booking_count }}</td>
+                        <td>
+                            {% if turf.is_active %}
+                                <span class="status-badge status-confirmed">Active</span>
+                            {% else %}
+                                <span class="status-badge status-cancelled">Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div style="display: flex; gap: 8px;">
+                                <a class="btn btn-sm btn-outline" href="{% url 'admin_turf_edit' turf.pk %}" style="padding: 4px 10px; font-size: 12px;">Edit</a>
+                                <form method="post" action="{% url 'admin_turf_toggle' turf.pk %}" style="display:inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-secondary" style="padding: 4px 10px; font-size: 12px; color: #334155 !important;">
+                                        {% if turf.is_active %}Deactivate{% else %}Activate{% endif %}
+                                    </button>
+                                </form>
+                                <a class="btn btn-sm btn-secondary" href="{% url 'turf_detail' turf.pk %}" target="_blank" style="padding: 4px 10px; font-size: 12px; color: #334155 !important;">View</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" style="text-align: center; padding: 40px; color: #64748b;">
+                            No turfs found. Click "+ Add New Ground" to create one.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+{% endblock %}

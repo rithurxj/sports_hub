@@ -1,0 +1,89 @@
+{% extends "booking/base.html" %}
+{% load static %}
+
+{% block title %}Manage Time Slots | Sports Hub Admin{% endblock %}
+
+{% block content %}
+<section class="section" style="padding-top: 40px;">
+    <div class="container">
+        <div class="section-title-wrap">
+            <div>
+                <span class="section-eyebrow">SCHEDULING CONFIG</span>
+                <h1 class="section-title">Time Slots Management</h1>
+                <p class="section-subtitle">Define standard playing intervals available across all turfs.</p>
+            </div>
+            <a class="btn btn-secondary" href="{% url 'admin_dashboard' %}">&larr; Back to Dashboard</a>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1.4fr; gap: 40px; align-items: start;">
+            <!-- Left: Add Time Slot Form -->
+            <div class="form-card">
+                <h3 style="font-family: var(--font-heading); font-size: 20px; margin-bottom: 18px;">+ Add New Time Slot</h3>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="{{ form.start_time.id_for_label }}">Start Time</label>
+                        {{ form.start_time }}
+                        {{ form.start_time.errors }}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.end_time.id_for_label }}">End Time</label>
+                        {{ form.end_time }}
+                        {{ form.end_time.errors }}
+                    </div>
+
+                    <div class="form-group" style="display: flex; align-items: center; gap: 10px;">
+                        {{ form.is_active }}
+                        <label for="{{ form.is_active.id_for_label }}" style="margin: 0; cursor: pointer;">Active for booking</label>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block">Save Time Slot</button>
+                </form>
+            </div>
+
+            <!-- Right: Existing Slots Table -->
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Interval</th>
+                            <th>Start</th>
+                            <th>End</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for slot in slots %}
+                        <tr>
+                            <td><strong>{{ slot }}</strong></td>
+                            <td>{{ slot.start_time|time:"h:i A" }}</td>
+                            <td>{{ slot.end_time|time:"h:i A" }}</td>
+                            <td>
+                                {% if slot.is_active %}
+                                    <span class="status-badge status-confirmed">Active</span>
+                                {% else %}
+                                    <span class="status-badge status-cancelled">Inactive</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <form method="post" action="{% url 'admin_slot_delete' slot.pk %}" onsubmit="return confirm('Toggle or delete slot {{ slot }}?');" style="display:inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-danger" style="padding: 4px 10px; font-size: 11.5px;">Toggle / Remove</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" style="text-align: center; padding: 30px;">No slots configured.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

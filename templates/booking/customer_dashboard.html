@@ -1,0 +1,136 @@
+{% extends "booking/base.html" %}
+{% load static %}
+
+{% block title %}Player Dashboard | Sports Hub{% endblock %}
+
+{% block content %}
+<section class="section" style="padding-top: 36px;">
+    <div class="container">
+        <!-- Header -->
+        <div style="background: var(--bg-surface); padding: 24px 28px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); margin-bottom: 28px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+            <div>
+                <span class="role-badge role-customer" style="margin-bottom: 8px;">Player Account</span>
+                <h1 style="font-family: var(--font-heading); font-size: 24px; font-weight: 700;">
+                    {{ user.first_name|default:user.username }}
+                </h1>
+                <p style="color: var(--text-secondary); font-size: 14px; margin-top: 2px;">
+                    Review your match schedule and upcoming turf reservations.
+                </p>
+            </div>
+            <div>
+                <a class="btn btn-primary btn-sm" href="{% url 'turf_list' %}">Book a Ground</a>
+            </div>
+        </div>
+
+        <!-- Metrics -->
+        <div class="dashboard-grid-stats">
+            <div class="stat-card">
+                <div class="stat-label">Total Reservations</div>
+                <div class="stat-num">{{ total_count }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Confirmed</div>
+                <div class="stat-num">{{ confirmed_count }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Upcoming</div>
+                <div class="stat-num">{{ upcoming_bookings.count }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Cancelled</div>
+                <div class="stat-num" style="color: var(--text-muted);">{{ cancelled_count }}</div>
+            </div>
+        </div>
+
+        <!-- Upcoming Games -->
+        <div style="margin-bottom: 36px;">
+            <div class="section-title-wrap">
+                <div>
+                    <span class="section-eyebrow">Schedule</span>
+                    <h2 class="section-title" style="font-size: 20px;">Upcoming Matches</h2>
+                </div>
+                <a class="btn btn-outline btn-sm" href="{% url 'my_bookings' %}">All History &rarr;</a>
+            </div>
+
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Ground</th>
+                            <th>Sport</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for b in upcoming_bookings %}
+                        <tr>
+                            <td>
+                                <strong>{{ b.turf.name }}</strong>
+                                <div style="font-size: 12px; color: var(--text-muted);">{{ b.turf.location }}</div>
+                            </td>
+                            <td>{{ b.turf.get_sport_type_display }}</td>
+                            <td><strong>{{ b.date|date:"D, d M Y" }}</strong></td>
+                            <td>{{ b.time_slot }}</td>
+                            <td><span class="status-badge status-confirmed">Confirmed</span></td>
+                            <td>
+                                <form method="post" action="{% url 'cancel_booking' b.pk %}" onsubmit="return confirm('Cancel this booking?');" style="display:inline;">
+                                    {% csrf_token %}
+                                    <button class="btn btn-sm btn-danger" style="padding: 3px 8px; font-size: 11.5px;">Cancel</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: 28px; color: var(--text-muted); font-size: 13.5px;">
+                                No upcoming matches scheduled.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Recommended Grounds -->
+        <div>
+            <div class="section-title-wrap">
+                <div>
+                    <span class="section-eyebrow">Venues</span>
+                    <h2 class="section-title" style="font-size: 20px;">Recommended Grounds</h2>
+                </div>
+                <a class="btn btn-outline btn-sm" href="{% url 'turf_list' %}">See All</a>
+            </div>
+
+            <div class="turf-grid">
+                {% for turf in recommended_turfs %}
+                <article class="turf-card">
+                    <div class="turf-card-media" style="height: 140px;">
+                        {% if turf.image_url %}
+                            <img src="{{ turf.image_url }}" alt="{{ turf.name }}">
+                        {% elif turf.sport_type == 'CRICKET' %}
+                            <img src="{% static 'images/cricket_turf.jpg' %}" alt="{{ turf.name }}">
+                        {% else %}
+                            <img src="{% static 'images/football_turf.jpg' %}" alt="{{ turf.name }}">
+                        {% endif %}
+                        <span class="turf-sport-badge">
+                            {{ turf.get_sport_type_display }}
+                        </span>
+                    </div>
+                    <div class="turf-card-body" style="padding: 16px;">
+                        <h3 class="turf-card-title" style="font-size: 16px;">{{ turf.name }}</h3>
+                        <p class="turf-card-location" style="font-size: 12.5px;">{{ turf.location }}</p>
+                        <div class="turf-card-footer" style="padding-top: 10px;">
+                            <div class="turf-price" style="font-size: 16px;">₹{{ turf.price|floatformat:0 }}</div>
+                            <a class="btn btn-sm btn-primary" href="{% url 'turf_detail' turf.pk %}">Select</a>
+                        </div>
+                    </div>
+                </article>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

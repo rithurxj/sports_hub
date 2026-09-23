@@ -1,0 +1,98 @@
+{% extends "booking/base.html" %}
+{% load static %}
+
+{% block title %}{{ action_title }} | Sports Hub Admin{% endblock %}
+
+{% block content %}
+<section class="section" style="padding-top: 40px;">
+    <div class="container" style="max-width: 800px;">
+        <div style="font-size: 13.5px; color: #64748b; margin-bottom: 20px;">
+            <a href="{% url 'admin_dashboard' %}">Admin Dashboard</a> &rsaquo; 
+            <a href="{% url 'admin_turf_list' %}">Turfs</a> &rsaquo; 
+            <span style="color: var(--text-main); font-weight: 600;">{{ action_title }}</span>
+        </div>
+
+        <div class="form-card">
+            <span class="section-eyebrow">CONFIGURATION</span>
+            <h1 style="font-family: var(--font-heading); font-size: 28px; margin: 4px 0 25px;">
+                {{ action_title }}
+            </h1>
+
+            <form method="post">
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                    <div class="flash-message flash-error">
+                        {% for err in form.non_field_errors %}<div>{{ err }}</div>{% endfor %}
+                    </div>
+                {% endif %}
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div class="form-group">
+                        <label for="{{ form.name.id_for_label }}">Ground / Turf Name *</label>
+                        {{ form.name }}
+                        {{ form.name.errors }}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.sport_type.id_for_label }}">Sport Category *</label>
+                        {{ form.sport_type }}
+                        {{ form.sport_type.errors }}
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 20px;">
+                    <div class="form-group">
+                        <label for="{{ form.location.id_for_label }}">Location / Address *</label>
+                        {{ form.location }}
+                        {{ form.location.errors }}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.price.id_for_label }}">Price Per Slot (₹) *</label>
+                        {{ form.price }}
+                        {{ form.price.errors }}
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div class="form-group">
+                        <label for="{{ form.surface_type.id_for_label }}">Surface Type</label>
+                        {{ form.surface_type }}
+                        {{ form.surface_type.errors }}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.contact_number.id_for_label }}">Contact / Manager Phone</label>
+                        {{ form.contact_number }}
+                        {{ form.contact_number.errors }}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.image_url.id_for_label }}">Image URL</label>
+                    {{ form.image_url }}
+                    <small style="color: #64748b; font-size: 12px;">Leave blank to use default high-res football/cricket arena images.</small>
+                    {{ form.image_url.errors }}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.description.id_for_label }}">Ground Description & Amenities</label>
+                    {{ form.description }}
+                    {{ form.description.errors }}
+                </div>
+
+                <div class="form-group" style="display: flex; align-items: center; gap: 10px;">
+                    {{ form.is_active }}
+                    <label for="{{ form.is_active.id_for_label }}" style="margin: 0; cursor: pointer;">Available for public booking (Active)</label>
+                </div>
+
+                <div style="display: flex; gap: 14px; margin-top: 30px;">
+                    <button type="submit" class="btn btn-primary">{{ button_text }}</button>
+                    <a class="btn btn-secondary" href="{% url 'admin_turf_list' %}" style="color: #334155 !important;">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,217 @@
+{% extends "booking/base.html" %}
+{% load static %}
+
+{% block title %}Book {{ turf.name }} | Sports Hub{% endblock %}
+
+{% block content %}
+<section class="section" style="padding-top: 36px;">
+    <div class="container">
+        <!-- Breadcrumb -->
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">
+            <a href="{% url 'home' %}">Home</a> &rsaquo; 
+            <a href="{% url 'turf_list' %}">Grounds</a> &rsaquo; 
+            <a href="{% url 'turf_detail' turf.pk %}">{{ turf.name }}</a> &rsaquo; 
+            <span style="color: var(--text-primary); font-weight: 500;">Reserve</span>
+        </div>
+
+        <div class="booking-grid">
+            <!-- Left Panel: Slot Selector -->
+            <div class="slot-selection-panel">
+                <span class="section-eyebrow">Reservation</span>
+                <h1 style="font-family: var(--font-heading); font-size: 24px; font-weight: 700; margin: 4px 0 20px;">
+                    Select Date & Time
+                </h1>
+
+                {% if form.non_field_errors %}
+                    <div class="flash-message flash-error" style="margin-bottom: 18px;">
+                        {% for err in form.non_field_errors %}<div>{{ err }}</div>{% endfor %}
+                    </div>
+                {% endif %}
+
+                <form method="post" id="turf-booking-form">
+                    {% csrf_token %}
+
+                    <div class="form-group">
+                        <label for="{{ form.date.id_for_label }}">Match Date</label>
+                        {{ form.date }}
+                        {{ form.date.errors }}
+                    </div>
+
+                    <div class="form-group" style="margin-top: 20px;">
+                        <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                            <label>Time Slot</label>
+                            <div class="slot-legend" style="margin: 0;">
+                                <div class="slot-legend-item"><span class="legend-dot dot-avail"></span> Available</div>
+                                <div class="slot-legend-item"><span class="legend-dot dot-booked"></span> Reserved</div>
+                            </div>
+                        </div>
+
+                        <!-- Fallback / Hidden Select connected to Django Form -->
+                        <div style="display: none;">
+                            {{ form.time_slot }}
+                        </div>
+                        {{ form.time_slot.errors }}
+
+                        <!-- Visual Interactive Slots Grid -->
+                        <div id="interactive-slots" class="slot-chips-grid">
+                            <!-- Populated dynamically via JS -->
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-top: 20px;">
+                        <label for="{{ form.notes.id_for_label }}">Notes (Optional)</label>
+                        {{ form.notes }}
+                        {{ form.notes.errors }}
+                    </div>
+
+                    <button type="submit" id="submit-booking-btn" class="btn btn-primary btn-block" style="margin-top: 20px;" disabled>
+                        Select a Time Slot to Confirm
+                    </button>
+                </form>
+            </div>
+
+            <!-- Right Panel: Sticky Booking Summary -->
+            <div>
+                <div class="booking-summary-card">
+                    <h3 style="font-family: var(--font-heading); font-size: 17px; margin-bottom: 16px; font-weight: 700;">Summary</h3>
+
+                    <div style="margin-bottom: 16px;">
+                        <strong style="font-size: 15px; display: block;">{{ turf.name }}</strong>
+                        <span style="font-size: 13px; color: var(--text-muted);">{{ turf.location }}</span>
+                    </div>
+
+                    <div class="summary-row">
+                        <span style="color: var(--text-muted);">Player</span>
+                        <strong>{{ user.first_name|default:user.username }}</strong>
+                    </div>
+
+                    <div class="summary-row">
+                        <span style="color: var(--text-muted);">Date</span>
+                        <strong id="summary-date">—</strong>
+                    </div>
+
+                    <div class="summary-row">
+                        <span style="color: var(--text-muted);">Time Slot</span>
+                        <strong id="summary-slot">—</strong>
+                    </div>
+
+                    <div class="summary-row">
+                        <span style="color: var(--text-muted);">Slot Rate</span>
+                        <span>₹{{ turf.price|floatformat:0 }}</span>
+                    </div>
+
+                    <div class="summary-row total">
+                        <span>Total Due</span>
+                        <span>₹{{ turf.price|floatformat:0 }}</span>
+                    </div>
+
+                    <p style="font-size: 12px; color: var(--text-muted); margin-top: 16px; line-height: 1.5;">
+                        Slots are reserved immediately upon confirmation.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const turfId = {{ turf.pk }};
+    const dateInput = document.getElementById("booking-date-input");
+    const selectElem = document.getElementById("time-slot-select");
+    const container = document.getElementById("interactive-slots");
+    const submitBtn = document.getElementById("submit-booking-btn");
+    const summaryDate = document.getElementById("summary-date");
+    const summarySlot = document.getElementById("summary-slot");
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const preselectedSlotId = urlParams.get("slot");
+
+    function updateSummary() {
+        if (dateInput.value) {
+            const d = new Date(dateInput.value + "T00:00:00");
+            summaryDate.textContent = d.toLocaleDateString("en-US", { weekday: 'short', day: 'numeric', month: 'short' });
+        } else {
+            summaryDate.textContent = "—";
+        }
+
+        if (selectElem.value) {
+            const opt = selectElem.options[selectElem.selectedIndex];
+            summarySlot.textContent = opt ? opt.text : "—";
+            submitBtn.disabled = false;
+            submitBtn.textContent = `Confirm Reservation (${summarySlot.textContent})`;
+        } else {
+            summarySlot.textContent = "—";
+            submitBtn.disabled = true;
+            submitBtn.textContent = "Select a Time Slot to Confirm";
+        }
+    }
+
+    function loadSlotsForDate(date) {
+        container.innerHTML = "<div style='grid-column: 1/-1; text-align: center; padding: 18px; color: var(--text-muted); font-size: 13px;'>Checking availability...</div>";
+        selectElem.value = "";
+        updateSummary();
+
+        fetch(`/api/turfs/${turfId}/availability/?date=${date}`)
+            .then(res => res.json())
+            .then(data => {
+                container.innerHTML = "";
+                if (!data.slots || data.slots.length === 0) {
+                    container.innerHTML = "<div style='grid-column: 1/-1; color: var(--text-muted); font-size: 13px;'>No time slots configured.</div>";
+                    return;
+                }
+
+                data.slots.forEach(slot => {
+                    const chip = document.createElement("div");
+                    let statusClass = "available";
+                    let statusText = "Available";
+
+                    if (slot.is_booked) {
+                        statusClass = "booked";
+                        statusText = "Reserved";
+                    } else if (slot.is_past) {
+                        statusClass = "past";
+                        statusText = "Passed";
+                    }
+
+                    chip.className = `slot-chip ${statusClass}`;
+                    chip.dataset.slotId = slot.id;
+                    chip.dataset.label = slot.label;
+                    chip.innerHTML = `
+                        <span class="slot-chip-time">${slot.label}</span>
+                        <span class="slot-chip-status">${statusText}</span>
+                    `;
+
+                    if (slot.is_available) {
+                        chip.addEventListener("click", function() {
+                            container.querySelectorAll(".slot-chip").forEach(c => c.classList.remove("selected"));
+                            chip.classList.add("selected");
+                            selectElem.value = slot.id;
+                            updateSummary();
+                        });
+
+                        if (preselectedSlotId && String(slot.id) === String(preselectedSlotId)) {
+                            chip.classList.add("selected");
+                            selectElem.value = slot.id;
+                            updateSummary();
+                        }
+                    }
+
+                    container.appendChild(chip);
+                });
+            })
+            .catch(err => {
+                container.innerHTML = "<div style='grid-column: 1/-1; color: var(--accent-rose); font-size: 13px;'>Unable to fetch slots.</div>";
+            });
+    }
+
+    dateInput.addEventListener("change", function() {
+        loadSlotsForDate(this.value);
+    });
+
+    if (dateInput.value) {
+        loadSlotsForDate(dateInput.value);
+    }
+});
+</script>
+{% endblock %}

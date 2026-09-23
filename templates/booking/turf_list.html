@@ -1,0 +1,94 @@
+{% extends "booking/base.html" %}
+{% load static %}
+
+{% block title %}Grounds Directory | Sports Hub{% endblock %}
+
+{% block content %}
+<section class="section" style="padding-top: 36px;">
+    <div class="container">
+        <div class="section-title-wrap">
+            <div>
+                <span class="section-eyebrow">Grounds Directory</span>
+                <h1 class="section-title">All Sports Turfs</h1>
+                <p class="section-subtitle">Search and filter grounds by sport, location, or price.</p>
+            </div>
+            {% if user.profile.is_admin_user %}
+                <a class="btn btn-primary btn-sm" href="{% url 'admin_turf_add' %}">+ Add Ground</a>
+            {% endif %}
+        </div>
+
+        <!-- Filter & Search Controls -->
+        <div class="filter-bar">
+            <div class="sport-tabs">
+                <a href="?sport=&q={{ query }}&sort={{ selected_sort }}" class="sport-tab {% if not selected_sport %}active{% endif %}">
+                    All
+                </a>
+                <a href="?sport=FOOTBALL&q={{ query }}&sort={{ selected_sort }}" class="sport-tab {% if selected_sport == 'FOOTBALL' %}active{% endif %}">
+                    Football
+                </a>
+                <a href="?sport=CRICKET&q={{ query }}&sort={{ selected_sort }}" class="sport-tab {% if selected_sport == 'CRICKET' %}active{% endif %}">
+                    Cricket
+                </a>
+                <a href="?sport=MULTI&q={{ query }}&sort={{ selected_sort }}" class="sport-tab {% if selected_sport == 'MULTI' %}active{% endif %}">
+                    Multi-Sport
+                </a>
+            </div>
+
+            <form method="get" class="search-box">
+                {% if selected_sport %}
+                    <input type="hidden" name="sport" value="{{ selected_sport }}">
+                {% endif %}
+                <input type="text" name="q" value="{{ query }}" placeholder="Search by name or location...">
+                
+                <select name="sort" onchange="this.form.submit()" class="form-control" style="width: auto; padding: 7px 10px; font-size: 13px;">
+                    <option value="name" {% if selected_sort == 'name' %}selected{% endif %}>Sort: Name</option>
+                    <option value="price_asc" {% if selected_sort == 'price_asc' %}selected{% endif %}>Price: Low to High</option>
+                    <option value="price_desc" {% if selected_sort == 'price_desc' %}selected{% endif %}>Price: High to Low</option>
+                </select>
+
+                <button type="submit" class="btn btn-sm btn-primary">Search</button>
+            </form>
+        </div>
+
+        <!-- Grid of Turfs -->
+        <div class="turf-grid">
+            {% for turf in turfs %}
+            <article class="turf-card">
+                <div class="turf-card-media">
+                    {% if turf.image_url %}
+                        <img src="{{ turf.image_url }}" alt="{{ turf.name }}">
+                    {% elif turf.sport_type == 'CRICKET' %}
+                        <img src="{% static 'images/cricket_turf.jpg' %}" alt="{{ turf.name }}">
+                    {% else %}
+                        <img src="{% static 'images/football_turf.jpg' %}" alt="{{ turf.name }}">
+                    {% endif %}
+                    
+                    <span class="turf-sport-badge">
+                        {{ turf.get_sport_type_display }}
+                    </span>
+                </div>
+
+                <div class="turf-card-body">
+                    <h3 class="turf-card-title">{{ turf.name }}</h3>
+                    <p class="turf-card-location">{{ turf.location }}</p>
+                    <span class="turf-surface-pill">{{ turf.surface_type }}</span>
+                    <p class="turf-card-desc">{{ turf.description }}</p>
+                    
+                    <div class="turf-card-footer">
+                        <div class="turf-price">
+                            ₹{{ turf.price|floatformat:0 }} <span>/ slot</span>
+                        </div>
+                        <a class="btn btn-sm btn-primary" href="{% url 'turf_detail' turf.pk %}">View Details</a>
+                    </div>
+                </div>
+            </article>
+            {% empty %}
+            <div style="grid-column: 1/-1; text-align: center; padding: 48px; background: #fff; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+                <p style="color: var(--text-secondary); font-size: 14px;">No sports turfs match your criteria.</p>
+                <a class="btn btn-outline btn-sm" href="{% url 'turf_list' %}" style="margin-top: 12px;">Reset Filters</a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

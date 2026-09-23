@@ -1,0 +1,69 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Sports Hub - Simple, minimal football and cricket turf reservation platform.">
+    <title>{% block title %}Sports Hub | Turf Booking{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+<header class="navbar">
+    <a class="brand" href="{% url 'home' %}">
+        <div class="brand-icon">⚲</div>
+        <div>Sports Hub</div>
+    </a>
+
+    <nav class="nav-links">
+        <a class="nav-item" href="{% url 'turf_list' %}">Explore Grounds</a>
+
+        {% if user.is_authenticated %}
+            {% if user.profile.is_admin_user %}
+                <a class="nav-item" href="{% url 'admin_dashboard' %}">Overview</a>
+                <a class="nav-item" href="{% url 'admin_turf_list' %}">Grounds</a>
+                <a class="nav-item" href="{% url 'admin_booking_list' %}">Bookings</a>
+                <a class="nav-item" href="/admin/" target="_blank">Django Admin</a>
+                <span class="role-badge role-admin">Turf Manager</span>
+            {% else %}
+                <a class="nav-item" href="{% url 'customer_dashboard' %}">Dashboard</a>
+                <a class="nav-item" href="{% url 'my_bookings' %}">My Bookings</a>
+                <span class="role-badge role-customer">Player</span>
+            {% endif %}
+
+            <form class="inline" action="{% url 'logout' %}" method="post">
+                {% csrf_token %}
+                <button class="nav-btn-logout" type="submit">Sign out ({{ user.username }})</button>
+            </form>
+        {% else %}
+            <a class="nav-item" href="{% url 'login' %}">Sign in</a>
+            <a class="nav-cta" href="{% url 'register' %}">Create Account</a>
+        {% endif %}
+    </nav>
+</header>
+
+{% if messages %}
+<div class="flash-container">
+    {% for message in messages %}
+        <div class="flash-message flash-{{ message.tags|default:'info' }}">
+            <span>{{ message }}</span>
+        </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<main>
+    {% block content %}{% endblock %}
+</main>
+
+<footer class="site-footer">
+    <div class="container">
+        <p>&copy; {% now "Y" %} Sports Hub &bull; Ground Booking & Scheduling</p>
+    </div>
+</footer>
+
+{% block extra_scripts %}{% endblock %}
+</body>
+</html>

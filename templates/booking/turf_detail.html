@@ -1,0 +1,161 @@
+{% extends "booking/base.html" %}
+{% load static %}
+
+{% block title %}{{ turf.name }} | Sports Hub{% endblock %}
+
+{% block content %}
+<section class="section" style="padding-top: 36px;">
+    <div class="container">
+        <!-- Minimal Breadcrumb -->
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">
+            <a href="{% url 'home' %}">Home</a> &rsaquo; 
+            <a href="{% url 'turf_list' %}">Grounds</a> &rsaquo; 
+            <span style="color: var(--text-primary); font-weight: 500;">{{ turf.name }}</span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 32px; align-items: start;">
+            <!-- Left Column: Media & Specifications -->
+            <div>
+                <div style="border-radius: var(--radius-md); overflow: hidden; height: 340px; border: 1px solid var(--border-subtle); background: var(--bg-subtle);">
+                    {% if turf.image_url %}
+                        <img src="{{ turf.image_url }}" alt="{{ turf.name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                    {% elif turf.sport_type == 'CRICKET' %}
+                        <img src="{% static 'images/cricket_turf.jpg' %}" alt="{{ turf.name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                    {% else %}
+                        <img src="{% static 'images/football_turf.jpg' %}" alt="{{ turf.name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                    {% endif %}
+                </div>
+
+                <div style="background: var(--bg-surface); padding: 24px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); margin-top: 20px;">
+                    <h2 style="font-family: var(--font-heading); font-size: 20px; margin-bottom: 10px; font-weight: 700;">Ground Information</h2>
+                    <p style="color: var(--text-secondary); line-height: 1.6; margin-bottom: 24px; font-size: 14px;">{{ turf.description }}</p>
+
+                    <h3 style="font-family: var(--font-heading); font-size: 15px; margin-bottom: 12px; font-weight: 600;">Facilities & Amenities</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 13.5px; color: var(--text-secondary);">
+                        <div>&bull; LED Floodlights</div>
+                        <div>&bull; Changing Rooms</div>
+                        <div>&bull; Parking Space</div>
+                        <div>&bull; Drinking Water</div>
+                        <div>&bull; Boundary Netting</div>
+                        <div>&bull; Equipment Rental</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Details & Real-Time Availability -->
+            <div>
+                <div style="background: var(--bg-surface); padding: 28px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+                    <span class="section-eyebrow">{{ turf.get_sport_type_display }} Ground</span>
+                    <h1 style="font-family: var(--font-heading); font-size: 26px; font-weight: 700; margin: 2px 0 10px;">
+                        {{ turf.name }}
+                    </h1>
+                    <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 16px;">{{ turf.location }}</p>
+
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px;">
+                        <span class="turf-surface-pill">{{ turf.surface_type }}</span>
+                        {% if turf.contact_number %}
+                            <span class="turf-surface-pill">{{ turf.contact_number }}</span>
+                        {% endif %}
+                    </div>
+
+                    <div style="background: var(--bg-subtle); padding: 16px 20px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <span style="font-size: 11.5px; color: var(--text-muted); text-transform: uppercase; font-weight: 500;">Rate</span>
+                            <div style="font-family: var(--font-heading); font-size: 24px; font-weight: 700; color: var(--text-primary);">
+                                ₹{{ turf.price|floatformat:0 }} <span style="font-size: 13px; font-weight: 400; color: var(--text-muted);">/ slot</span>
+                            </div>
+                        </div>
+                        <a class="btn btn-primary" href="{% url 'book_turf' turf.pk %}">Reserve Slot &rarr;</a>
+                    </div>
+
+                    <!-- Live Slot Availability Widget -->
+                    <div style="border-top: 1px solid var(--border-subtle); padding-top: 20px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                            <h3 style="font-family: var(--font-heading); font-size: 16px; font-weight: 600;">
+                                Slot Availability
+                            </h3>
+                            <input type="date" id="preview-date" value="{{ today|date:'Y-m-d' }}" min="{{ today|date:'Y-m-d' }}" class="form-control" style="width: auto; padding: 5px 10px; font-size: 13px;">
+                        </div>
+
+                        <div class="slot-legend" style="margin-top: 0; margin-bottom: 12px;">
+                            <div class="slot-legend-item"><span class="legend-dot dot-avail"></span> Available</div>
+                            <div class="slot-legend-item"><span class="legend-dot dot-booked"></span> Reserved</div>
+                            <div class="slot-legend-item"><span class="legend-dot dot-past"></span> Past</div>
+                        </div>
+
+                        <div id="slots-container" class="slot-chips-grid">
+                            <!-- Populated dynamically via JS -->
+                        </div>
+
+                        <div style="margin-top: 20px;">
+                            <a id="book-with-date-btn" class="btn btn-primary btn-block" href="{% url 'book_turf' turf.pk %}?date={{ today|date:'Y-m-d' }}">
+                                Proceed to Booking
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const turfId = {{ turf.pk }};
+    const dateInput = document.getElementById("preview-date");
+    const container = document.getElementById("slots-container");
+    const bookBtn = document.getElementById("book-with-date-btn");
+
+    function fetchSlots(date) {
+        container.innerHTML = "<div style='grid-column: 1/-1; text-align: center; padding: 18px; color: var(--text-muted); font-size: 13px;'>Checking availability...</div>";
+        fetch(`/api/turfs/${turfId}/availability/?date=${date}`)
+            .then(res => res.json())
+            .then(data => {
+                container.innerHTML = "";
+                if (!data.slots || data.slots.length === 0) {
+                    container.innerHTML = "<div style='grid-column: 1/-1; font-size: 13px; color: var(--text-muted);'>No slots scheduled.</div>";
+                    return;
+                }
+                data.slots.forEach(slot => {
+                    const chip = document.createElement("div");
+                    let statusClass = "available";
+                    let statusText = "Available";
+
+                    if (slot.is_booked) {
+                        statusClass = "booked";
+                        statusText = "Reserved";
+                    } else if (slot.is_past) {
+                        statusClass = "past";
+                        statusText = "Passed";
+                    }
+
+                    chip.className = `slot-chip ${statusClass}`;
+                    chip.innerHTML = `
+                        <span class="slot-chip-time">${slot.label}</span>
+                        <span class="slot-chip-status">${statusText}</span>
+                    `;
+
+                    if (slot.is_available) {
+                        chip.addEventListener("click", function() {
+                            window.location.href = `{% url 'book_turf' turf.pk %}?date=${date}&slot=${slot.id}`;
+                        });
+                    }
+
+                    container.appendChild(chip);
+                });
+            })
+            .catch(err => {
+                container.innerHTML = "<div style='grid-column: 1/-1; color: var(--accent-rose); font-size: 13px;'>Error checking slots.</div>";
+            });
+    }
+
+    dateInput.addEventListener("change", function() {
+        const selectedDate = this.value;
+        bookBtn.href = `{% url 'book_turf' turf.pk %}?date=${selectedDate}`;
+        fetchSlots(selectedDate);
+    });
+
+    fetchSlots(dateInput.value);
+});
+</script>
+{% endblock %}

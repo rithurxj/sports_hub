@@ -1,0 +1,95 @@
+{% extends "booking/base.html" %}
+{% load static %}
+
+{% block title %}My Bookings | Sports Hub{% endblock %}
+
+{% block content %}
+<section class="section" style="padding-top: 36px;">
+    <div class="container">
+        <div class="section-title-wrap">
+            <div>
+                <span class="section-eyebrow">Reservations</span>
+                <h1 class="section-title">My Bookings</h1>
+                <p class="section-subtitle">Track confirmed, completed, and cancelled reservations.</p>
+            </div>
+            <a class="btn btn-primary btn-sm" href="{% url 'turf_list' %}">+ Book a Ground</a>
+        </div>
+
+        <!-- Filter Tabs -->
+        <div class="filter-bar" style="margin-bottom: 20px;">
+            <div class="sport-tabs">
+                <a href="?status=ALL" class="sport-tab {% if selected_status == 'ALL' %}active{% endif %}">All</a>
+                <a href="?status=CONFIRMED" class="sport-tab {% if selected_status == 'CONFIRMED' %}active{% endif %}">Confirmed</a>
+                <a href="?status=CANCELLED" class="sport-tab {% if selected_status == 'CANCELLED' %}active{% endif %}">Cancelled</a>
+            </div>
+        </div>
+
+        <!-- Bookings Table -->
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Booking ID</th>
+                        <th>Ground</th>
+                        <th>Sport</th>
+                        <th>Match Date</th>
+                        <th>Time Slot</th>
+                        <th>Fee</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for b in bookings %}
+                    <tr>
+                        <td>#{{ b.id }}</td>
+                        <td>
+                            <strong>{{ b.turf.name }}</strong>
+                            <div style="font-size: 12px; color: var(--text-muted);">{{ b.turf.location }}</div>
+                        </td>
+                        <td>
+                            <span class="role-badge role-customer" style="font-size: 11px;">
+                                {{ b.turf.get_sport_type_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <strong>{{ b.date|date:"D, d M Y" }}</strong>
+                            {% if b.date == today %}
+                                <span style="background: var(--bg-subtle); color: var(--text-primary); font-size: 10px; font-weight: 700; padding: 2px 5px; border-radius: 3px; border: 1px solid var(--border-subtle); margin-left: 4px;">TODAY</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ b.time_slot }}</td>
+                        <td>₹{{ b.total_amount|default:b.turf.price|floatformat:0 }}</td>
+                        <td>
+                            {% if b.status == 'CONFIRMED' %}
+                                <span class="status-badge status-confirmed">Confirmed</span>
+                            {% elif b.status == 'CANCELLED' %}
+                                <span class="status-badge status-cancelled">Cancelled</span>
+                            {% else %}
+                                <span class="status-badge status-completed">{{ b.get_status_display }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if b.status == 'CONFIRMED' and b.date >= today %}
+                                <form method="post" action="{% url 'cancel_booking' b.pk %}" onsubmit="return confirm('Cancel reservation for {{ b.turf.name }} on {{ b.date }}?');" style="display: inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-danger" style="padding: 3px 8px; font-size: 11.5px;">Cancel</button>
+                                </form>
+                            {% else %}
+                                <span style="color: var(--text-dim); font-size: 13px;">—</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" style="text-align: center; padding: 36px; color: var(--text-muted); font-size: 13.5px;">
+                            No reservations found matching this status.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+{% endblock %}

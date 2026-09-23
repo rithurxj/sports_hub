@@ -1,0 +1,128 @@
+{% extends "booking/base.html" %}
+{% load static %}
+
+{% block title %}Manage Bookings | Sports Hub Admin{% endblock %}
+
+{% block content %}
+<section class="section" style="padding-top: 40px;">
+    <div class="container">
+        <div class="section-title-wrap">
+            <div>
+                <span class="section-eyebrow">RESERVATIONS REGISTRY</span>
+                <h1 class="section-title">All Customer Bookings</h1>
+                <p class="section-subtitle">Oversee all ground reservations, verify attendance, and manage cancellations.</p>
+            </div>
+            <a class="btn btn-secondary" href="{% url 'admin_dashboard' %}">&larr; Back to Dashboard</a>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+            <form method="get" style="display: flex; gap: 14px; flex-wrap: wrap; width: 100%; align-items: center;">
+                <div style="flex: 1; min-width: 180px;">
+                    <label style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase;">Ground</label>
+                    <select name="turf" onchange="this.form.submit()" class="form-control" style="padding: 8px 12px; font-size: 13.5px;">
+                        <option value="">All Grounds</option>
+                        {% for t in turfs %}
+                            <option value="{{ t.id }}" {% if selected_turf == t.id %}selected{% endif %}>{{ t.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div style="flex: 1; min-width: 150px;">
+                    <label style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase;">Status</label>
+                    <select name="status" onchange="this.form.submit()" class="form-control" style="padding: 8px 12px; font-size: 13.5px;">
+                        <option value="">All Statuses</option>
+                        <option value="CONFIRMED" {% if selected_status == 'CONFIRMED' %}selected{% endif %}>Confirmed</option>
+                        <option value="CANCELLED" {% if selected_status == 'CANCELLED' %}selected{% endif %}>Cancelled</option>
+                        <option value="COMPLETED" {% if selected_status == 'COMPLETED' %}selected{% endif %}>Completed</option>
+                    </select>
+                </div>
+
+                <div style="flex: 1; min-width: 160px;">
+                    <label style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase;">Specific Date</label>
+                    <input type="date" name="date" value="{{ selected_date }}" onchange="this.form.submit()" class="form-control" style="padding: 8px 12px; font-size: 13.5px;">
+                </div>
+
+                <div style="align-self: flex-end;">
+                    <a href="{% url 'admin_booking_list' %}" class="btn btn-sm btn-outline" style="padding: 9px 16px;">Reset</a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Bookings Table -->
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Player / User</th>
+                        <th>Contact</th>
+                        <th>Ground</th>
+                        <th>Date</th>
+                        <th>Time Slot</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for b in bookings %}
+                    <tr>
+                        <td><strong>#{{ b.id }}</strong></td>
+                        <td>
+                            <strong>{{ b.user.first_name|default:b.user.username }}</strong>
+                            <div style="font-size: 12px; color: #64748b;">@{{ b.user.username }}</div>
+                        </td>
+                        <td>{{ b.user.profile.phone|default:b.user.email }}</td>
+                        <td>
+                            <strong>{{ b.turf.name }}</strong>
+                            <div style="font-size: 12px; color: #64748b;">{{ b.turf.sport_icon }} {{ b.turf.get_sport_type_display }}</div>
+                        </td>
+                        <td><strong>{{ b.date|date:"d M Y" }}</strong></td>
+                        <td>{{ b.time_slot }}</td>
+                        <td><strong>₹{{ b.total_amount|default:b.turf.price|floatformat:0 }}</strong></td>
+                        <td>
+                            {% if b.status == 'CONFIRMED' %}
+                                <span class="status-badge status-confirmed">Confirmed</span>
+                            {% elif b.status == 'CANCELLED' %}
+                                <span class="status-badge status-cancelled">Cancelled</span>
+                            {% else %}
+                                <span class="status-badge status-completed">{{ b.get_status_display }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div style="display: flex; gap: 6px;">
+                                {% if b.status != 'CONFIRMED' %}
+                                    <form method="post" action="{% url 'admin_booking_status' b.pk 'CONFIRMED' %}" style="display:inline;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-outline" style="padding: 4px 8px; font-size: 11px;">Confirm</button>
+                                    </form>
+                                {% endif %}
+                                {% if b.status != 'COMPLETED' %}
+                                    <form method="post" action="{% url 'admin_booking_status' b.pk 'COMPLETED' %}" style="display:inline;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-secondary" style="padding: 4px 8px; font-size: 11px; color: #334155 !important;">Complete</button>
+                                    </form>
+                                {% endif %}
+                                {% if b.status != 'CANCELLED' %}
+                                    <form method="post" action="{% url 'admin_booking_status' b.pk 'CANCELLED' %}" style="display:inline;" onsubmit="return confirm('Cancel booking #{{ b.id }}?');">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-danger" style="padding: 4px 8px; font-size: 11px;">Cancel</button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9" style="text-align: center; padding: 40px; color: #64748b;">
+                            No bookings match the selected filters.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+{% endblock %}

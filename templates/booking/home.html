@@ -1,0 +1,124 @@
+{% extends "booking/base.html" %}
+{% load static %}
+
+{% block title %}Sports Hub | Football & Cricket Turf Reservations{% endblock %}
+
+{% block content %}
+<!-- Minimal Hero -->
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-pill">Real-Time Turf Booking</div>
+        <h1>Reserve playing grounds <span>without friction.</span></h1>
+        <p>A direct, clash-free scheduling system for football and cricket grounds. Check live time slots and reserve your pitch instantly.</p>
+        
+        <div class="hero-actions">
+            <a class="btn btn-primary" href="{% url 'turf_list' %}">Browse Grounds &rarr;</a>
+            {% if not user.is_authenticated %}
+                <a class="btn btn-secondary" href="{% url 'register' %}">Create Account</a>
+            {% elif user.profile.is_admin_user %}
+                <a class="btn btn-secondary" href="{% url 'admin_dashboard' %}">Manager Dashboard</a>
+            {% else %}
+                <a class="btn btn-secondary" href="{% url 'customer_dashboard' %}">My Schedule</a>
+            {% endif %}
+        </div>
+
+        <div class="hero-stats-bar">
+            <div class="hero-stat-item">
+                <div class="hero-stat-num">{{ total_turfs|default:"6" }}</div>
+                <div class="hero-stat-label">Active Venues</div>
+            </div>
+            <div class="hero-stat-item">
+                <div class="hero-stat-num">{{ total_slots|default:"11" }}</div>
+                <div class="hero-stat-label">Daily Slots</div>
+            </div>
+            <div class="hero-stat-item">
+                <div class="hero-stat-num">Verified</div>
+                <div class="hero-stat-label">Pitches</div>
+            </div>
+            <div class="hero-stat-item">
+                <div class="hero-stat-num">Instant</div>
+                <div class="hero-stat-label">Confirmation</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="hero-visual">
+        <img src="{% static 'images/football_turf.jpg' %}" alt="Sports Turf Facility">
+    </div>
+</section>
+
+<!-- Featured Turfs -->
+<section class="section">
+    <div class="container">
+        <div class="section-title-wrap">
+            <div>
+                <span class="section-eyebrow">Available Venues</span>
+                <h2 class="section-title">Selected Playing Grounds</h2>
+                <p class="section-subtitle">Football pitches and enclosed box cricket arenas ready for matches.</p>
+            </div>
+            <a class="btn btn-outline btn-sm" href="{% url 'turf_list' %}">View All Grounds &rarr;</a>
+        </div>
+
+        <div class="turf-grid">
+            {% for turf in turfs %}
+            <article class="turf-card">
+                <div class="turf-card-media">
+                    {% if turf.image_url %}
+                        <img src="{{ turf.image_url }}" alt="{{ turf.name }}">
+                    {% elif turf.sport_type == 'CRICKET' %}
+                        <img src="{% static 'images/cricket_turf.jpg' %}" alt="{{ turf.name }}">
+                    {% else %}
+                        <img src="{% static 'images/football_turf.jpg' %}" alt="{{ turf.name }}">
+                    {% endif %}
+                    
+                    <span class="turf-sport-badge">
+                        {{ turf.get_sport_type_display }}
+                    </span>
+                </div>
+
+                <div class="turf-card-body">
+                    <h3 class="turf-card-title">{{ turf.name }}</h3>
+                    <p class="turf-card-location">{{ turf.location }}</p>
+                    <span class="turf-surface-pill">{{ turf.surface_type }}</span>
+                    <p class="turf-card-desc">{{ turf.description|truncatewords:16 }}</p>
+                    
+                    <div class="turf-card-footer">
+                        <div class="turf-price">
+                            ₹{{ turf.price|floatformat:0 }} <span>/ slot</span>
+                        </div>
+                        <a class="btn btn-sm btn-primary" href="{% url 'turf_detail' turf.pk %}">Select Slot</a>
+                    </div>
+                </div>
+            </article>
+            {% empty %}
+            <div style="grid-column: 1/-1; text-align: center; padding: 48px; background: #fff; border-radius: 8px; border: 1px dashed var(--border-subtle);">
+                <p style="color: var(--text-muted);">No turfs configured yet.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Minimal Dual-Role Section -->
+<section class="section" style="border-top: 1px solid var(--border-subtle); background: var(--bg-surface);">
+    <div class="container">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+            <div style="padding: 28px; border: 1px solid var(--border-subtle); border-radius: var(--radius-md);">
+                <h3 style="font-family: var(--font-heading); font-size: 18px; margin-bottom: 8px; font-weight: 700;">For Players</h3>
+                <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 20px; line-height: 1.6;">
+                    Browse certified football and cricket pitches, check real-time availability for any date, and reserve slots with zero scheduling clashes.
+                </p>
+                <a class="btn btn-secondary btn-sm" href="{% url 'register' %}">Sign Up as Player</a>
+            </div>
+
+            <div style="padding: 28px; border: 1px solid var(--border-subtle); border-radius: var(--radius-md);">
+                <h3 style="font-family: var(--font-heading); font-size: 18px; margin-bottom: 8px; font-weight: 700;">For Turf Managers</h3>
+                <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 20px; line-height: 1.6;">
+                    Manage multiple playing grounds, customize hourly time slots, oversee daily schedules, and manage player bookings seamlessly.
+                </p>
+                <a class="btn btn-secondary btn-sm" href="{% url 'register' %}">Sign Up as Manager</a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
