@@ -6,35 +6,47 @@
 {% block content %}
 <section class="section" style="padding-top: 36px;">
     <div class="container">
-        <!-- Header -->
-        <div style="background: var(--bg-surface); padding: 24px 28px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); margin-bottom: 28px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
-            <div>
-                <span class="role-badge role-customer" style="margin-bottom: 8px;">Player Account</span>
-                <h1 style="font-family: var(--font-heading); font-size: 24px; font-weight: 700;">
-                    {{ user.first_name|default:user.username }}
-                </h1>
-                <p style="color: var(--text-secondary); font-size: 14px; margin-top: 2px;">
-                    Review your match schedule and upcoming turf reservations.
-                </p>
+        <!-- Player Account Header Banner -->
+        <div style="background: linear-gradient(135deg, var(--dark-900) 0%, #064e3b 100%); color: #ffffff; padding: 28px 36px; border-radius: var(--radius-xl); margin-bottom: 32px; border: 1px solid rgba(16, 185, 129, 0.2); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; box-shadow: var(--shadow-md);">
+            <div style="display: flex; align-items: center; gap: 18px;">
+                <div style="width: 56px; height: 56px; border-radius: 50%; background: rgba(16, 185, 129, 0.2); border: 2px solid var(--emerald-400); display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 800; color: #ffffff;">
+                    {{ user.first_name|default:user.username|slice:":1"|upper }}
+                </div>
+                <div>
+                    <span class="role-badge role-customer" style="margin-bottom: 6px; background: rgba(16, 185, 129, 0.2); color: #34d399; border-color: rgba(52, 211, 153, 0.3);">
+                        Player Hub
+                    </span>
+                    <h1 style="font-family: var(--font-display); font-size: 26px; font-weight: 900; color: #ffffff; margin: 0;">
+                        Welcome back, {{ user.first_name|default:user.username }}!
+                    </h1>
+                    <p style="color: #cbd5e1; font-size: 13.5px; margin-top: 3px;">
+                        Manage your upcoming match schedule, digital passes, and ground reviews.
+                    </p>
+                </div>
             </div>
-            <div>
-                <a class="btn btn-primary btn-sm" href="{% url 'turf_list' %}">Book a Ground</a>
+            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                <a class="btn btn-secondary btn-lg" href="{% url 'scoreboard' %}" style="background: rgba(255,255,255,0.15); color: #ffffff !important; border-color: rgba(255,255,255,0.3);">
+                    <span>📟</span> Live Scoreboard
+                </a>
+                <a class="btn btn-primary btn-lg" href="{% url 'turf_list' %}">
+                    Book a Match Ground &rarr;
+                </a>
             </div>
         </div>
 
-        <!-- Metrics -->
+        <!-- Metrics Stat Cards -->
         <div class="dashboard-grid-stats">
             <div class="stat-card">
-                <div class="stat-label">Total Reservations</div>
+                <div class="stat-label">Total Match Passes</div>
                 <div class="stat-num">{{ total_count }}</div>
             </div>
             <div class="stat-card">
-                <div class="stat-label">Confirmed</div>
-                <div class="stat-num">{{ confirmed_count }}</div>
+                <div class="stat-label">Confirmed Games</div>
+                <div class="stat-num" style="color: var(--emerald-600);">{{ confirmed_count }}</div>
             </div>
             <div class="stat-card">
-                <div class="stat-label">Upcoming</div>
-                <div class="stat-num">{{ upcoming_bookings.count }}</div>
+                <div class="stat-label">Upcoming Matches</div>
+                <div class="stat-num" style="color: #2563eb;">{{ upcoming_bookings.count }}</div>
             </div>
             <div class="stat-card">
                 <div class="stat-label">Cancelled</div>
@@ -42,50 +54,73 @@
             </div>
         </div>
 
-        <!-- Upcoming Games -->
-        <div style="margin-bottom: 36px;">
+        <!-- Upcoming Games Table -->
+        <div style="margin-bottom: 44px;">
             <div class="section-title-wrap">
                 <div>
-                    <span class="section-eyebrow">Schedule</span>
-                    <h2 class="section-title" style="font-size: 20px;">Upcoming Matches</h2>
+                    <span class="section-eyebrow">Match Calendar</span>
+                    <h2 class="section-title" style="font-size: 22px;">Upcoming Matches</h2>
                 </div>
-                <a class="btn btn-outline btn-sm" href="{% url 'my_bookings' %}">All History &rarr;</a>
+                <a class="btn btn-outline btn-sm" href="{% url 'my_bookings' %}">Complete Booking History &rarr;</a>
             </div>
 
             <div class="table-responsive">
                 <table class="data-table">
                     <thead>
                         <tr>
-                            <th>Ground</th>
+                            <th>Ground &amp; Location</th>
                             <th>Sport</th>
                             <th>Date</th>
-                            <th>Time</th>
+                            <th>Time Slot</th>
+                            <th>Payment</th>
                             <th>Status</th>
-                            <th>Action</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for b in upcoming_bookings %}
                         <tr>
                             <td>
-                                <strong>{{ b.turf.name }}</strong>
+                                <a href="{% url 'turf_detail' b.turf.pk %}" style="font-family: var(--font-heading); font-weight: 700; color: var(--dark-900);">
+                                    {{ b.turf.name }}
+                                </a>
                                 <div style="font-size: 12px; color: var(--text-muted);">{{ b.turf.location }}</div>
                             </td>
-                            <td>{{ b.turf.get_sport_type_display }}</td>
-                            <td><strong>{{ b.date|date:"D, d M Y" }}</strong></td>
-                            <td>{{ b.time_slot }}</td>
+                            <td>
+                                <span style="font-size: 12px; font-weight: 600;">
+                                    {{ b.turf.sport_icon }} {{ b.turf.get_sport_type_display }}
+                                </span>
+                            </td>
+                            <td><strong style="color: var(--dark-900);">{{ b.date|date:"D, d M Y" }}</strong></td>
+                            <td><strong style="color: var(--emerald-600);">{{ b.time_slot }}</strong></td>
+                            <td>
+                                {% if b.payment_status == 'PAID' %}
+                                    <span class="status-badge" style="background: #f0fdf4; color: #166534; border-color: #bbf7d0;">✓ Paid (₹{{ b.total_amount|floatformat:0 }})</span>
+                                {% elif b.payment_status == 'PENDING' %}
+                                    <a href="{% url 'payment_checkout' b.pk %}" class="btn btn-sm btn-primary" style="padding: 4px 10px; font-size: 11.5px;">Pay ₹{{ b.total_amount|floatformat:0 }}</a>
+                                {% else %}
+                                    <span class="status-badge status-completed">{{ b.payment_status }}</span>
+                                {% endif %}
+                            </td>
                             <td><span class="status-badge status-confirmed">Confirmed</span></td>
                             <td>
-                                <form method="post" action="{% url 'cancel_booking' b.pk %}" onsubmit="return confirm('Cancel this booking?');" style="display:inline;">
-                                    {% csrf_token %}
-                                    <button class="btn btn-sm btn-danger" style="padding: 3px 8px; font-size: 11.5px;">Cancel</button>
-                                </form>
+                                <div style="display: flex; gap: 6px; align-items: center;">
+                                    <a href="{% url 'payment_confirmation' b.pk %}" class="btn btn-sm btn-outline" style="padding: 4px 8px; font-size: 11.5px;" title="View Pass">Pass</a>
+                                    <a href="{% url 'add_review' b.turf.pk %}?booking={{ b.id }}" class="btn btn-sm btn-outline" style="padding: 4px 8px; font-size: 11.5px;">⭐ Review</a>
+                                    <form method="post" action="{% url 'cancel_booking' b.pk %}" onsubmit="return confirm('Cancel this match reservation?');" style="display:inline; margin: 0;">
+                                        {% csrf_token %}
+                                        <button class="btn btn-sm btn-danger" style="padding: 4px 8px; font-size: 11.5px;">Cancel</button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="6" style="text-align: center; padding: 28px; color: var(--text-muted); font-size: 13.5px;">
-                                No upcoming matches scheduled.
+                            <td colspan="7" style="text-align: center; padding: 40px 20px; color: var(--text-muted); font-size: 14px;">
+                                <div style="font-size: 32px; margin-bottom: 8px;">⚽</div>
+                                <strong>No upcoming matches booked yet.</strong>
+                                <p style="font-size: 13px; margin: 6px 0 16px;">Pick a football turf, cricket arena, or badminton court to lock in your next game.</p>
+                                <a href="{% url 'turf_list' %}" class="btn btn-primary btn-sm">Find Open Slots Now</a>
                             </td>
                         </tr>
                         {% endfor %}
@@ -98,33 +133,37 @@
         <div>
             <div class="section-title-wrap">
                 <div>
-                    <span class="section-eyebrow">Venues</span>
-                    <h2 class="section-title" style="font-size: 20px;">Recommended Grounds</h2>
+                    <span class="section-eyebrow">Recommendations</span>
+                    <h2 class="section-title" style="font-size: 20px;">Top Rated Grounds for You</h2>
                 </div>
-                <a class="btn btn-outline btn-sm" href="{% url 'turf_list' %}">See All</a>
+                <a class="btn btn-outline btn-sm" href="{% url 'turf_list' %}">Browse All Arenas &rarr;</a>
             </div>
 
             <div class="turf-grid">
                 {% for turf in recommended_turfs %}
                 <article class="turf-card">
-                    <div class="turf-card-media" style="height: 140px;">
+                    <div class="turf-card-media" style="height: 160px;">
                         {% if turf.image_url %}
-                            <img src="{{ turf.image_url }}" alt="{{ turf.name }}">
+                            <img src="{{ turf.image_url }}" alt="{{ turf.name }}" loading="lazy">
                         {% elif turf.sport_type == 'CRICKET' %}
-                            <img src="{% static 'images/cricket_turf.jpg' %}" alt="{{ turf.name }}">
+                            <img src="{% static 'images/cricket_turf.jpg' %}" alt="{{ turf.name }}" loading="lazy">
+                        {% elif turf.sport_type == 'BADMINTON' %}
+                            <img src="{% static 'images/badminton_court.jpg' %}" alt="{{ turf.name }}" loading="lazy">
+                        {% elif turf.sport_type == 'TENNIS' %}
+                            <img src="{% static 'images/tennis_court.jpg' %}" alt="{{ turf.name }}" loading="lazy">
                         {% else %}
-                            <img src="{% static 'images/football_turf.jpg' %}" alt="{{ turf.name }}">
+                            <img src="{% static 'images/football_turf.jpg' %}" alt="{{ turf.name }}" loading="lazy">
                         {% endif %}
                         <span class="turf-sport-badge">
-                            {{ turf.get_sport_type_display }}
+                            {{ turf.sport_icon }} {{ turf.get_sport_type_display }}
                         </span>
                     </div>
-                    <div class="turf-card-body" style="padding: 16px;">
-                        <h3 class="turf-card-title" style="font-size: 16px;">{{ turf.name }}</h3>
-                        <p class="turf-card-location" style="font-size: 12.5px;">{{ turf.location }}</p>
+                    <div class="turf-card-body" style="padding: 18px;">
+                        <h3 class="turf-card-title" style="font-size: 16.5px; margin-bottom: 2px;">{{ turf.name }}</h3>
+                        <p class="turf-card-location" style="font-size: 12.5px; margin-bottom: 12px;">{{ turf.location }}</p>
                         <div class="turf-card-footer" style="padding-top: 10px;">
-                            <div class="turf-price" style="font-size: 16px;">₹{{ turf.price|floatformat:0 }}</div>
-                            <a class="btn btn-sm btn-primary" href="{% url 'turf_detail' turf.pk %}">Select</a>
+                            <div class="turf-price" style="font-size: 18px;">₹{{ turf.price|floatformat:0 }} <span>/ slot</span></div>
+                            <a class="btn btn-sm btn-primary" href="{% url 'turf_detail' turf.pk %}">Select Slot</a>
                         </div>
                     </div>
                 </article>

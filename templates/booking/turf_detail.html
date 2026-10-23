@@ -6,79 +6,106 @@
 {% block content %}
 <section class="section" style="padding-top: 36px;">
     <div class="container">
-        <!-- Minimal Breadcrumb -->
+        <!-- Breadcrumb -->
         <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">
             <a href="{% url 'home' %}">Home</a> &rsaquo; 
             <a href="{% url 'turf_list' %}">Grounds</a> &rsaquo; 
-            <span style="color: var(--text-primary); font-weight: 500;">{{ turf.name }}</span>
+            <span style="color: var(--text-primary); font-weight: 600;">{{ turf.name }}</span>
         </div>
 
         <div style="display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 32px; align-items: start;">
             <!-- Left Column: Media & Specifications -->
             <div>
-                <div style="border-radius: var(--radius-md); overflow: hidden; height: 340px; border: 1px solid var(--border-subtle); background: var(--bg-subtle);">
+                <div style="border-radius: var(--radius-xl); overflow: hidden; height: 380px; border: 1px solid var(--border-subtle); background: var(--dark-900); position: relative; box-shadow: var(--shadow-md);">
                     {% if turf.image_url %}
                         <img src="{{ turf.image_url }}" alt="{{ turf.name }}" style="width: 100%; height: 100%; object-fit: cover;">
                     {% elif turf.sport_type == 'CRICKET' %}
                         <img src="{% static 'images/cricket_turf.jpg' %}" alt="{{ turf.name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                    {% elif turf.sport_type == 'BADMINTON' %}
+                        <img src="{% static 'images/badminton_court.jpg' %}" alt="{{ turf.name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                    {% elif turf.sport_type == 'TENNIS' %}
+                        <img src="{% static 'images/tennis_court.jpg' %}" alt="{{ turf.name }}" style="width: 100%; height: 100%; object-fit: cover;">
                     {% else %}
                         <img src="{% static 'images/football_turf.jpg' %}" alt="{{ turf.name }}" style="width: 100%; height: 100%; object-fit: cover;">
                     {% endif %}
+
+                    <span class="turf-sport-badge">
+                        {{ turf.sport_icon }} {{ turf.get_sport_type_display }}
+                    </span>
                 </div>
 
-                <div style="background: var(--bg-surface); padding: 24px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); margin-top: 20px;">
-                    <h2 style="font-family: var(--font-heading); font-size: 20px; margin-bottom: 10px; font-weight: 700;">Ground Information</h2>
-                    <p style="color: var(--text-secondary); line-height: 1.6; margin-bottom: 24px; font-size: 14px;">{{ turf.description }}</p>
+                <div style="background: var(--bg-surface); padding: 28px; border-radius: var(--radius-xl); border: 1px solid var(--border-subtle); margin-top: 24px; box-shadow: var(--shadow-sm);">
+                    <h2 style="font-family: var(--font-display); font-size: 20px; margin-bottom: 12px; font-weight: 800; color: var(--dark-900);">
+                        Venue &amp; Pitch Specifications
+                    </h2>
+                    <p style="color: var(--text-secondary); line-height: 1.65; margin-bottom: 24px; font-size: 14.5px;">
+                        {{ turf.description }}
+                    </p>
 
-                    <h3 style="font-family: var(--font-heading); font-size: 15px; margin-bottom: 12px; font-weight: 600;">Facilities & Amenities</h3>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 13.5px; color: var(--text-secondary);">
-                        <div>&bull; LED Floodlights</div>
-                        <div>&bull; Changing Rooms</div>
-                        <div>&bull; Parking Space</div>
-                        <div>&bull; Drinking Water</div>
-                        <div>&bull; Boundary Netting</div>
-                        <div>&bull; Equipment Rental</div>
+                    <h3 style="font-family: var(--font-heading); font-size: 15px; margin-bottom: 14px; font-weight: 700; color: var(--dark-900);">
+                        Facilities &amp; Ground Amenities
+                    </h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; font-size: 13.5px; color: var(--text-secondary);">
+                        <div style="display: flex; align-items: center; gap: 8px;">💡 High-Beam LED Floodlights</div>
+                        <div style="display: flex; align-items: center; gap: 8px;">🚿 Modern Changing Rooms</div>
+                        <div style="display: flex; align-items: center; gap: 8px;">🚗 Dedicated Parking Space</div>
+                        <div style="display: flex; align-items: center; gap: 8px;">💧 Chilled Drinking Water</div>
+                        <div style="display: flex; align-items: center; gap: 8px;">🛡️ Perimeter Safety Netting</div>
+                        <div style="display: flex; align-items: center; gap: 8px;">⚽ Athletic Equipment Rental</div>
                     </div>
                 </div>
             </div>
 
-            <!-- Right Column: Details & Real-Time Availability -->
+            <!-- Right Column: Booking Widget & Slot Matrix -->
             <div>
-                <div style="background: var(--bg-surface); padding: 28px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
-                    <span class="section-eyebrow">{{ turf.get_sport_type_display }} Ground</span>
-                    <h1 style="font-family: var(--font-heading); font-size: 26px; font-weight: 700; margin: 2px 0 10px;">
-                        {{ turf.name }}
-                    </h1>
-                    <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 16px;">{{ turf.location }}</p>
-
-                    <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px;">
-                        <span class="turf-surface-pill">{{ turf.surface_type }}</span>
-                        {% if turf.contact_number %}
-                            <span class="turf-surface-pill">{{ turf.contact_number }}</span>
+                <div style="background: var(--bg-surface); padding: 32px; border-radius: var(--radius-xl); border: 1px solid var(--border-subtle); box-shadow: var(--shadow-md);">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                        <span class="section-eyebrow">{{ turf.sport_icon }} {{ turf.get_sport_type_display }} Venue</span>
+                        {% if turf.reviews_count > 0 %}
+                            <span style="font-size: 12px; font-weight: 700; color: #b45309; background: #fffbeb; border: 1px solid #fde68a; padding: 3px 8px; border-radius: var(--radius-full);">
+                                ★ {{ turf.average_rating|floatformat:1 }} ({{ turf.reviews_count }})
+                            </span>
                         {% endif %}
                     </div>
 
-                    <div style="background: var(--bg-subtle); padding: 16px 20px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center;">
+                    <h1 style="font-family: var(--font-display); font-size: 28px; font-weight: 800; margin: 0 0 10px; color: var(--dark-900); line-height: 1.2;">
+                        {{ turf.name }}
+                    </h1>
+                    <p class="turf-card-location" style="margin-bottom: 16px;">{{ turf.location }}</p>
+
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px;">
+                        <span class="turf-surface-pill">{{ turf.surface_type }}</span>
+                        {% if turf.contact_number %}
+                            <span class="turf-surface-pill" style="background: var(--bg-surface-elevated); color: var(--text-secondary); border-color: var(--border-subtle);">
+                                📞 {{ turf.contact_number }}
+                            </span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Price Block -->
+                    <div style="background: var(--bg-surface-elevated); padding: 18px 22px; border-radius: var(--radius-lg); border: 1px solid var(--border-subtle); margin-bottom: 26px; display: flex; justify-content: space-between; align-items: center;">
                         <div>
-                            <span style="font-size: 11.5px; color: var(--text-muted); text-transform: uppercase; font-weight: 500;">Rate</span>
-                            <div style="font-family: var(--font-heading); font-size: 24px; font-weight: 700; color: var(--text-primary);">
-                                ₹{{ turf.price|floatformat:0 }} <span style="font-size: 13px; font-weight: 400; color: var(--text-muted);">/ slot</span>
+                            <span style="font-size: 11.5px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Standard Hourly Slot</span>
+                            <div style="font-family: var(--font-display); font-size: 26px; font-weight: 900; color: var(--dark-900);">
+                                ₹{{ turf.price|floatformat:0 }} <span style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--text-muted);">/ slot</span>
                             </div>
                         </div>
-                        <a class="btn btn-primary" href="{% url 'book_turf' turf.pk %}">Reserve Slot &rarr;</a>
+                        <a class="btn btn-primary" href="{% url 'book_turf' turf.pk %}">
+                            Reserve Now &rarr;
+                        </a>
                     </div>
 
                     <!-- Live Slot Availability Widget -->
-                    <div style="border-top: 1px solid var(--border-subtle); padding-top: 20px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                            <h3 style="font-family: var(--font-heading); font-size: 16px; font-weight: 600;">
-                                Slot Availability
+                    <div style="border-top: 1px solid var(--border-light); padding-top: 22px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 8px;">
+                            <h3 style="font-family: var(--font-heading); font-size: 16px; font-weight: 700; color: var(--dark-900);">
+                                Live Slot Availability
                             </h3>
-                            <input type="date" id="preview-date" value="{{ today|date:'Y-m-d' }}" min="{{ today|date:'Y-m-d' }}" class="form-control" style="width: auto; padding: 5px 10px; font-size: 13px;">
+                            <input type="date" id="preview-date" value="{{ today|date:'Y-m-d' }}" min="{{ today|date:'Y-m-d' }}" class="form-control" style="width: auto; padding: 6px 12px; font-size: 13px;" aria-label="Select match date">
                         </div>
 
-                        <div class="slot-legend" style="margin-top: 0; margin-bottom: 12px;">
-                            <div class="slot-legend-item"><span class="legend-dot dot-avail"></span> Available</div>
+                        <div class="slot-legend" style="margin-bottom: 14px;">
+                            <div class="slot-legend-item"><span class="legend-dot dot-avail"></span> Available (Click to Book)</div>
                             <div class="slot-legend-item"><span class="legend-dot dot-booked"></span> Reserved</div>
                             <div class="slot-legend-item"><span class="legend-dot dot-past"></span> Past</div>
                         </div>
@@ -87,13 +114,153 @@
                             <!-- Populated dynamically via JS -->
                         </div>
 
-                        <div style="margin-top: 20px;">
-                            <a id="book-with-date-btn" class="btn btn-primary btn-block" href="{% url 'book_turf' turf.pk %}?date={{ today|date:'Y-m-d' }}">
-                                Proceed to Booking
+                        <div style="margin-top: 24px;">
+                            <a id="book-with-date-btn" class="btn btn-primary btn-block btn-lg" href="{% url 'book_turf' turf.pk %}?date={{ today|date:'Y-m-d' }}">
+                                Proceed to Reservation
                             </a>
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- Player Reviews & Community Sentiment Section -->
+        <div style="margin-top: 56px; border-top: 1px solid var(--border-subtle); padding-top: 40px;">
+            <div class="section-title-wrap">
+                <div>
+                    <span class="section-eyebrow" style="color: var(--accent-amber);">Community Sentiment</span>
+                    <h2 class="section-title">Verified Player Reviews &amp; Ratings</h2>
+                    <p class="section-subtitle">Real experiences shared by players who have booked matches at {{ turf.name }}.</p>
+                </div>
+                {% if user.is_authenticated %}
+                <a href="{% url 'add_review' turf.pk %}{% if user_eligible_booking %}?booking={{ user_eligible_booking.id }}{% endif %}" class="btn btn-outline btn-sm">
+                    {% if user_review %}✎ Edit My Review{% else %}⭐ Write a Review{% endif %}
+                </a>
+                {% endif %}
+            </div>
+
+            <!-- Reviews Overview & Breakdown Grid -->
+            <div style="display: grid; grid-template-columns: 280px 1fr; gap: 32px; margin-bottom: 36px; align-items: center; background: var(--bg-surface); padding: 28px; border-radius: var(--radius-xl); border: 1px solid var(--border-subtle); box-shadow: var(--shadow-sm);">
+                <!-- Left: Big Average Rating Score -->
+                <div style="text-align: center; border-right: 1px solid var(--border-light); padding-right: 24px;">
+                    <div style="font-family: var(--font-display); font-size: 52px; font-weight: 900; line-height: 1; color: var(--dark-900); margin-bottom: 8px;">
+                        {% if reviews_count > 0 %}{{ avg_rating|floatformat:1 }}{% else %}—{% endif %}
+                    </div>
+                    <div style="color: #f59e0b; font-size: 22px; letter-spacing: 2px; margin-bottom: 6px;">
+                        {{ turf.rating_stars_display }}
+                    </div>
+                    <div style="font-size: 13px; color: var(--text-muted);">
+                        Based on <strong>{{ reviews_count }}</strong> verified review{{ reviews_count|pluralize }}
+                    </div>
+                </div>
+
+                <!-- Right: Star Rating Distribution Progress Bars -->
+                <div>
+                    {% for star, data in rating_breakdown.items %}
+                    <div style="display: flex; align-items: center; gap: 12px; font-size: 13px; margin-bottom: 8px;">
+                        <span style="width: 44px; color: var(--text-secondary); font-weight: 600;">{{ star }} ★</span>
+                        <div style="flex: 1; height: 10px; background: var(--bg-surface-elevated); border-radius: var(--radius-full); overflow: hidden; border: 1px solid var(--border-subtle);">
+                            <div style="width: {{ data.pct }}%; height: 100%; background: linear-gradient(90deg, #f59e0b, #d97706); border-radius: var(--radius-full);"></div>
+                        </div>
+                        <span style="width: 36px; text-align: right; color: var(--text-muted); font-size: 11.5px; font-weight: 600;">{{ data.count }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Review Submission Form (Inline Quick Review) -->
+            {% if user.is_authenticated and not user_review %}
+            <div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-xl); padding: 28px; margin-bottom: 32px; box-shadow: var(--shadow-sm);">
+                <h3 style="font-family: var(--font-heading); font-size: 17px; font-weight: 700; margin-bottom: 4px; color: var(--dark-900);">
+                    Leave Your Review for {{ turf.name }}
+                </h3>
+                <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 18px;">
+                    Played here recently? Share your thoughts on turf grass condition, lighting, changing rooms, and amenities.
+                </p>
+
+                <form method="post" action="{% url 'add_review' turf.pk %}">
+                    {% csrf_token %}
+                    {% if user_eligible_booking %}
+                    <input type="hidden" name="booking_id" value="{{ user_eligible_booking.id }}">
+                    {% endif %}
+                    <input type="hidden" name="next" value="{% url 'turf_detail' turf.pk %}">
+
+                    <div style="display: grid; grid-template-columns: 160px 1fr; gap: 16px; margin-bottom: 14px;">
+                        <div class="form-group" style="margin: 0;">
+                            <label for="{{ review_form.rating.id_for_label }}" style="font-size: 12.5px;">Rating Score</label>
+                            {{ review_form.rating }}
+                        </div>
+                        <div class="form-group" style="margin: 0;">
+                            <label for="{{ review_form.title.id_for_label }}" style="font-size: 12.5px;">Headline Summary</label>
+                            {{ review_form.title }}
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 16px;">
+                        <label for="{{ review_form.comment.id_for_label }}" style="font-size: 12.5px;">Review Details</label>
+                        {{ review_form.comment }}
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-sm">
+                        Submit Verified Review
+                    </button>
+                </form>
+            </div>
+            {% endif %}
+
+            <!-- Reviews Feed -->
+            <div class="reviews-feed">
+                {% for r in reviews %}
+                <div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 22px; margin-bottom: 16px; box-shadow: var(--shadow-xs);">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--emerald-50); border: 1.5px solid var(--emerald-200); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px; color: var(--emerald-700);">
+                                {{ r.user.first_name|default:r.user.username|slice:":1"|upper }}
+                            </div>
+                            <div>
+                                <strong style="font-size: 14px; display: block; color: var(--dark-900);">{{ r.user.first_name|default:r.user.username }}</strong>
+                                <div style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-muted); margin-top: 2px;">
+                                    <span>{{ r.created_at|date:"d M Y" }}</span>
+                                    {% if r.is_verified %}
+                                    <span style="color: #166534; background: #f0fdf4; border: 1px solid #bbf7d0; padding: 2px 7px; border-radius: var(--radius-full); font-size: 10.5px; font-weight: 700;">
+                                        ✓ Verified Match
+                                    </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span style="color: #f59e0b; font-size: 16px;">
+                                {% for i in "12345"|make_list %}
+                                    {% if forloop.counter <= r.rating %}★{% else %}☆{% endif %}
+                                {% endfor %}
+                            </span>
+                            {% if r.user == user or user.is_staff %}
+                            <a href="{% url 'delete_review' r.pk %}" onclick="return confirm('Delete this review?');" style="color: var(--text-dim); font-size: 12px; padding: 2px 6px;" title="Delete Review">✕</a>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {% if r.title %}
+                    <strong style="font-size: 14.5px; display: block; margin-bottom: 6px; color: var(--dark-900);">{{ r.title }}</strong>
+                    {% endif %}
+                    <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.6; margin: 0;">
+                        {{ r.comment }}
+                    </p>
+                </div>
+                {% empty %}
+                <div style="background: var(--bg-surface); border: 1px dashed var(--border-subtle); border-radius: var(--radius-lg); padding: 40px 20px; text-align: center; color: var(--text-muted);">
+                    <div style="font-size: 32px; margin-bottom: 8px;">⭐</div>
+                    <strong style="font-size: 15px; color: var(--dark-900); display: block; margin-bottom: 4px;">No reviews yet for {{ turf.name }}</strong>
+                    <p style="font-size: 13.5px; max-width: 440px; margin: 0 auto 18px;">Be the first player to share your rating and feedback on this ground!</p>
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'add_review' turf.pk %}" class="btn btn-primary btn-sm">Write First Review</a>
+                    {% else %}
+                    <a href="{% url 'login' %}?next={{ request.path }}" class="btn btn-outline btn-sm">Sign in to Review</a>
+                    {% endif %}
+                </div>
+                {% endfor %}
             </div>
         </div>
     </div>
@@ -107,13 +274,13 @@ document.addEventListener("DOMContentLoaded", function() {
     const bookBtn = document.getElementById("book-with-date-btn");
 
     function fetchSlots(date) {
-        container.innerHTML = "<div style='grid-column: 1/-1; text-align: center; padding: 18px; color: var(--text-muted); font-size: 13px;'>Checking availability...</div>";
+        container.innerHTML = "<div style='grid-column: 1/-1; text-align: center; padding: 20px; color: var(--text-muted); font-size: 13px;'>Checking real-time slot availability...</div>";
         fetch(`/api/turfs/${turfId}/availability/?date=${date}`)
             .then(res => res.json())
             .then(data => {
                 container.innerHTML = "";
                 if (!data.slots || data.slots.length === 0) {
-                    container.innerHTML = "<div style='grid-column: 1/-1; font-size: 13px; color: var(--text-muted);'>No slots scheduled.</div>";
+                    container.innerHTML = "<div style='grid-column: 1/-1; font-size: 13px; color: var(--text-muted); text-align: center;'>No slots scheduled for this date.</div>";
                     return;
                 }
                 data.slots.forEach(slot => {
@@ -131,8 +298,8 @@ document.addEventListener("DOMContentLoaded", function() {
 
                     chip.className = `slot-chip ${statusClass}`;
                     chip.innerHTML = `
-                        <span class="slot-chip-time">${slot.label}</span>
-                        <span class="slot-chip-status">${statusText}</span>
+                        <div style="font-size: 13px; font-weight: 700; margin-bottom: 2px;">${slot.label}</div>
+                        <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.85;">${statusText}</div>
                     `;
 
                     if (slot.is_available) {
@@ -145,7 +312,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 });
             })
             .catch(err => {
-                container.innerHTML = "<div style='grid-column: 1/-1; color: var(--accent-rose); font-size: 13px;'>Error checking slots.</div>";
+                container.innerHTML = "<div style='grid-column: 1/-1; color: var(--accent-rose); font-size: 13px;'>Unable to verify slots right now.</div>";
             });
     }
 

@@ -61,6 +61,7 @@
                         <th>Date</th>
                         <th>Time Slot</th>
                         <th>Amount</th>
+                        <th>Payment</th>
                         <th>Status</th>
                         <th>Actions</th>
                     </tr>
@@ -81,6 +82,17 @@
                         <td><strong>{{ b.date|date:"d M Y" }}</strong></td>
                         <td>{{ b.time_slot }}</td>
                         <td><strong>₹{{ b.total_amount|default:b.turf.price|floatformat:0 }}</strong></td>
+                        <td>
+                            {% if b.payment_status == 'PAID' %}
+                                <span class="status-badge" style="background: #f0fdf4; color: #166534; border-color: #bbf7d0;" title="Razorpay: {{ b.razorpay_payment_id }}">
+                                    ✓ Paid
+                                </span>
+                            {% elif b.payment_status == 'PENDING' %}
+                                <span class="status-badge" style="background: #fffbeb; color: #b45309; border-color: #fde68a;">Pending</span>
+                            {% else %}
+                                <span class="status-badge status-completed">{{ b.payment_status }}</span>
+                            {% endif %}
+                        </td>
                         <td>
                             {% if b.status == 'CONFIRMED' %}
                                 <span class="status-badge status-confirmed">Confirmed</span>

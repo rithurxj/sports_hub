@@ -1,62 +1,173 @@
 {% extends "booking/base.html" %}
 {% load static %}
 
-{% block title %}Sports Hub | Football & Cricket Turf Reservations{% endblock %}
+{% block title %}Sports Hub | Book Football Turfs, Cricket Arenas, Badminton & Tennis Courts{% endblock %}
 
 {% block content %}
-<!-- Minimal Hero -->
-<section class="hero">
-    <div class="hero-content">
-        <div class="hero-pill">Real-Time Turf Booking</div>
-        <h1>Reserve playing grounds <span>without friction.</span></h1>
-        <p>A direct, clash-free scheduling system for football and cricket grounds. Check live time slots and reserve your pitch instantly.</p>
+<!-- Stadium Hero Section -->
+<section class="hero hero-slideshow-hero">
+    <!-- Motion Slideshow Background Layers -->
+    <div class="hero-slideshow-track" aria-hidden="true">
+        <div class="hero-slide hero-slide-1" style="background-image: url('{% static 'images/football_turf.jpg' %}');"></div>
+        <div class="hero-slide hero-slide-2" style="background-image: url('{% static 'images/cricket_turf.jpg' %}');"></div>
+        <div class="hero-slide hero-slide-3" style="background-image: url('{% static 'images/tennis_court.jpg' %}');"></div>
+        <div class="hero-slide hero-slide-4" style="background-image: url('{% static 'images/badminton_court.jpg' %}');"></div>
+    </div>
+    <div class="hero-slideshow-overlay" aria-hidden="true"></div>
+
+    <div class="hero-content" style="position: relative; z-index: 2; max-width: 680px;">
+        <div class="hero-pill">
+            <span class="pulse-dot"></span>
+            <span>⚽ 🏏 🏸 🎾 Real-Time Slot Locking Active</span>
+        </div>
+        <h1>Book Elite Turfs &amp; Courts. <br><span>Play Without Friction.</span></h1>
+        <p>
+            Experience lightning-fast, conflict-free scheduling across premier football turfs, cricket arenas, badminton wooden &amp; synthetic courts, and tennis clubs. Instant slot confirmation powered by Razorpay.
+        </p>
         
         <div class="hero-actions">
-            <a class="btn btn-primary" href="{% url 'turf_list' %}">Browse Grounds &rarr;</a>
+            <a class="btn btn-primary btn-lg" href="{% url 'turf_list' %}">
+                Browse All Venues &rarr;
+            </a>
             {% if not user.is_authenticated %}
-                <a class="btn btn-secondary" href="{% url 'register' %}">Create Account</a>
+                <a class="btn btn-secondary btn-lg" href="{% url 'register' %}">
+                    Create Player Account
+                </a>
             {% elif user.profile.is_admin_user %}
-                <a class="btn btn-secondary" href="{% url 'admin_dashboard' %}">Manager Dashboard</a>
+                <a class="btn btn-secondary btn-lg" href="{% url 'admin_dashboard' %}">
+                    <span>📊</span> Manager Hub
+                </a>
             {% else %}
-                <a class="btn btn-secondary" href="{% url 'customer_dashboard' %}">My Schedule</a>
+                <a class="btn btn-secondary btn-lg" href="{% url 'customer_dashboard' %}">
+                    <span>📅</span> My Schedule
+                </a>
             {% endif %}
         </div>
 
         <div class="hero-stats-bar">
             <div class="hero-stat-item">
-                <div class="hero-stat-num">{{ total_turfs|default:"6" }}</div>
+                <div class="hero-stat-num">{{ total_turfs|default:"10" }}+</div>
                 <div class="hero-stat-label">Active Venues</div>
             </div>
             <div class="hero-stat-item">
                 <div class="hero-stat-num">{{ total_slots|default:"11" }}</div>
-                <div class="hero-stat-label">Daily Slots</div>
+                <div class="hero-stat-label">Daily Match Slots</div>
             </div>
             <div class="hero-stat-item">
-                <div class="hero-stat-num">Verified</div>
-                <div class="hero-stat-label">Pitches</div>
+                <div class="hero-stat-num">4 Sports</div>
+                <div class="hero-stat-label">Curated Grounds</div>
             </div>
             <div class="hero-stat-item">
-                <div class="hero-stat-num">Instant</div>
-                <div class="hero-stat-label">Confirmation</div>
+                <div class="hero-stat-num" style="color: var(--accent-primary);">Instant</div>
+                <div class="hero-stat-label">Slot Confirmation</div>
             </div>
         </div>
     </div>
 
-    <div class="hero-visual">
-        <img src="{% static 'images/football_turf.jpg' %}" alt="Sports Turf Facility">
+    <!-- Live Arena Rotation Indicator -->
+    <div class="hero-live-indicator" aria-hidden="true">
+        <span class="indicator-dot"></span>
+        <span>Live Arenas • Dynamic Rotation</span>
     </div>
 </section>
 
-<!-- Featured Turfs -->
-<section class="section">
+<!-- Interactive Venue Quick Search Card -->
+<div class="container">
+    <div class="quick-search-card">
+        <form method="get" action="{% url 'turf_list' %}" class="quick-search-form">
+            <div class="quick-search-field">
+                <label for="search-sport">Sport Discipline</label>
+                <select id="search-sport" name="sport" class="form-control">
+                    <option value="">All Sports Categories (Any)</option>
+                    <option value="FOOTBALL">⚽ Football (5v5 &amp; 7v7 Turfs)</option>
+                    <option value="CRICKET">🏏 Box Cricket &amp; Nets</option>
+                    <option value="BADMINTON">🏸 Badminton (Wooden / Synthetic)</option>
+                    <option value="TENNIS">🎾 Tennis (Hard &amp; Clay Courts)</option>
+                    <option value="MULTI">🏆 Multi-Sport Arenas</option>
+                </select>
+            </div>
+
+            <div class="quick-search-field">
+                <label for="search-query">Ground Name or City</label>
+                <input type="text" id="search-query" name="q" placeholder="e.g. GreenField, Whitefield, Downtown..." class="form-control">
+            </div>
+
+            <div class="quick-search-field">
+                <label for="search-sort">Sorting</label>
+                <select id="search-sort" name="sort" class="form-control">
+                    <option value="name">Sort by Name</option>
+                    <option value="price_asc">Price: Low to High</option>
+                    <option value="price_desc">Price: High to Low</option>
+                </select>
+            </div>
+
+            <div>
+                <button type="submit" class="btn btn-primary" style="height: 42px; width: 100%; white-space: nowrap;">
+                    <span>🔍</span> Find Available Slots
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Sports Categories Grid -->
+<section class="section" style="padding-top: 60px;">
     <div class="container">
         <div class="section-title-wrap">
             <div>
-                <span class="section-eyebrow">Available Venues</span>
-                <h2 class="section-title">Selected Playing Grounds</h2>
-                <p class="section-subtitle">Football pitches and enclosed box cricket arenas ready for matches.</p>
+                <span class="section-eyebrow">Disciplines</span>
+                <h2 class="section-title">Explore by Sport Category</h2>
+                <p class="section-subtitle">Dedicated sports facilities designed and maintained for high athletic performance.</p>
             </div>
-            <a class="btn btn-outline btn-sm" href="{% url 'turf_list' %}">View All Grounds &rarr;</a>
+            <a class="btn btn-outline btn-sm" href="{% url 'turf_list' %}">All Sports Directory &rarr;</a>
+        </div>
+
+        <div class="sports-category-grid">
+            <a href="{% url 'turf_list' %}?sport=FOOTBALL" class="sport-category-card">
+                <div class="sport-cat-icon">⚽</div>
+                <div>
+                    <div class="sport-cat-title">Football Turfs</div>
+                    <div class="sport-cat-desc">5v5 &amp; 7v7 FIFA artificial grass</div>
+                </div>
+            </a>
+
+            <a href="{% url 'turf_list' %}?sport=CRICKET" class="sport-category-card">
+                <div class="sport-cat-icon">🏏</div>
+                <div>
+                    <div class="sport-cat-title">Cricket Arenas</div>
+                    <div class="sport-cat-desc">Box cricket &amp; high-speed nets</div>
+                </div>
+            </a>
+
+            <a href="{% url 'turf_list' %}?sport=BADMINTON" class="sport-category-card">
+                <div class="sport-cat-icon">🏸</div>
+                <div>
+                    <div class="sport-cat-title">Badminton Courts</div>
+                    <div class="sport-cat-desc">BWF wooden &amp; synthetic mats</div>
+                </div>
+            </a>
+
+            <a href="{% url 'turf_list' %}?sport=TENNIS" class="sport-category-card">
+                <div class="sport-cat-icon">🎾</div>
+                <div>
+                    <div class="sport-cat-title">Tennis Clubs</div>
+                    <div class="sport-cat-desc">Plexipave hard &amp; red clay courts</div>
+                </div>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Playing Venues -->
+<section class="section" style="background: var(--bg-surface-elevated); border-top: 1px solid var(--border-subtle); border-bottom: 1px solid var(--border-subtle);">
+    <div class="container">
+        <div class="section-title-wrap">
+            <div>
+                <span class="section-eyebrow">Available Arenas</span>
+                <h2 class="section-title">Curated Match Grounds &amp; Courts</h2>
+                <p class="section-subtitle">Reserve guaranteed slots with instant booking verification and zero scheduling overlaps.</p>
+            </div>
+            <a class="btn btn-primary btn-sm" href="{% url 'turf_list' %}">Browse All Arenas &rarr;</a>
         </div>
 
         <div class="turf-grid">
@@ -64,60 +175,145 @@
             <article class="turf-card">
                 <div class="turf-card-media">
                     {% if turf.image_url %}
-                        <img src="{{ turf.image_url }}" alt="{{ turf.name }}">
+                        <img src="{{ turf.image_url }}" alt="{{ turf.name }}" loading="lazy">
                     {% elif turf.sport_type == 'CRICKET' %}
-                        <img src="{% static 'images/cricket_turf.jpg' %}" alt="{{ turf.name }}">
+                        <img src="{% static 'images/cricket_turf.jpg' %}" alt="{{ turf.name }}" loading="lazy">
+                    {% elif turf.sport_type == 'BADMINTON' %}
+                        <img src="{% static 'images/badminton_court.jpg' %}" alt="{{ turf.name }}" loading="lazy">
+                    {% elif turf.sport_type == 'TENNIS' %}
+                        <img src="{% static 'images/tennis_court.jpg' %}" alt="{{ turf.name }}" loading="lazy">
                     {% else %}
-                        <img src="{% static 'images/football_turf.jpg' %}" alt="{{ turf.name }}">
+                        <img src="{% static 'images/football_turf.jpg' %}" alt="{{ turf.name }}" loading="lazy">
                     {% endif %}
                     
                     <span class="turf-sport-badge">
-                        {{ turf.get_sport_type_display }}
+                        {{ turf.sport_icon }} {{ turf.get_sport_type_display }}
                     </span>
                 </div>
 
                 <div class="turf-card-body">
-                    <h3 class="turf-card-title">{{ turf.name }}</h3>
-                    <p class="turf-card-location">{{ turf.location }}</p>
-                    <span class="turf-surface-pill">{{ turf.surface_type }}</span>
-                    <p class="turf-card-desc">{{ turf.description|truncatewords:16 }}</p>
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px; gap: 8px;">
+                        <h3 class="turf-card-title" style="margin: 0;">{{ turf.name }}</h3>
+                        {% if turf.reviews_count > 0 %}
+                            <span style="display: inline-flex; align-items: center; gap: 3px; font-size: 11.5px; font-weight: 700; color: #b45309; background: #fffbeb; border: 1px solid #fde68a; padding: 2px 7px; border-radius: var(--radius-full); white-space: nowrap;">
+                                ★ {{ turf.average_rating|floatformat:1 }} ({{ turf.reviews_count }})
+                            </span>
+                        {% else %}
+                            <span style="font-size: 11px; color: var(--emerald-600); background: var(--emerald-50); border: 1px solid var(--emerald-200); padding: 2px 6px; border-radius: var(--radius-full); font-weight: 600; white-space: nowrap;">★ New Venue</span>
+                        {% endif %}
+                    </div>
                     
+                    <p class="turf-card-location">{{ turf.location }}</p>
+                    
+                    <div>
+                        <span class="turf-surface-pill">{{ turf.surface_type }}</span>
+                    </div>
+
+                    <p class="turf-card-desc">{{ turf.description|truncatewords:18 }}</p>
+
+                    <div class="turf-amenities-row">
+                        <span class="amenity-chip">💡 Floodlights</span>
+                        <span class="amenity-chip">🚗 Parking</span>
+                        <span class="amenity-chip">🚿 Changing Room</span>
+                    </div>
+
                     <div class="turf-card-footer">
                         <div class="turf-price">
                             ₹{{ turf.price|floatformat:0 }} <span>/ slot</span>
                         </div>
-                        <a class="btn btn-sm btn-primary" href="{% url 'turf_detail' turf.pk %}">Select Slot</a>
+                        <a class="btn btn-sm btn-primary" href="{% url 'turf_detail' turf.pk %}">
+                            Check Slots
+                        </a>
                     </div>
                 </div>
             </article>
             {% empty %}
-            <div style="grid-column: 1/-1; text-align: center; padding: 48px; background: #fff; border-radius: 8px; border: 1px dashed var(--border-subtle);">
-                <p style="color: var(--text-muted);">No turfs configured yet.</p>
+            <div style="grid-column: 1/-1; text-align: center; padding: 56px 20px; background: #ffffff; border-radius: var(--radius-lg); border: 1px dashed var(--border-subtle);">
+                <div style="font-size: 36px; margin-bottom: 12px;">🏟️</div>
+                <h3 style="font-family: var(--font-heading); font-size: 18px; margin-bottom: 6px;">No Venues Available</h3>
+                <p style="color: var(--text-muted); font-size: 14px;">Venues will appear here once configured by the Turf Manager.</p>
             </div>
             {% endfor %}
         </div>
     </div>
 </section>
 
-<!-- Minimal Dual-Role Section -->
-<section class="section" style="border-top: 1px solid var(--border-subtle); background: var(--bg-surface);">
+<!-- Why Sports Hub Advantage -->
+<section class="section">
     <div class="container">
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
-            <div style="padding: 28px; border: 1px solid var(--border-subtle); border-radius: var(--radius-md);">
-                <h3 style="font-family: var(--font-heading); font-size: 18px; margin-bottom: 8px; font-weight: 700;">For Players</h3>
-                <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 20px; line-height: 1.6;">
-                    Browse certified football and cricket pitches, check real-time availability for any date, and reserve slots with zero scheduling clashes.
+        <div class="section-title-wrap" style="text-align: center; justify-content: center; margin-bottom: 44px;">
+            <div style="max-width: 640px; margin: 0 auto;">
+                <span class="section-eyebrow">The Sports Hub Advantage</span>
+                <h2 class="section-title">Engineered for Seamless Matches</h2>
+                <p class="section-subtitle" style="margin: 8px auto 0;">No phone calls, no double bookings, no friction. Experience professional grade ground reservations.</p>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 24px;">
+            <div style="background: var(--bg-surface); padding: 28px; border-radius: var(--radius-lg); border: 1px solid var(--border-subtle); box-shadow: var(--shadow-sm); transition: var(--transition);">
+                <div style="width: 48px; height: 48px; background: var(--emerald-50); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 16px; color: var(--emerald-600);">
+                    ⏱️
+                </div>
+                <h3 style="font-family: var(--font-heading); font-size: 17px; font-weight: 700; margin-bottom: 8px;">Zero Conflict Booking</h3>
+                <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.6;">
+                    Our concurrency engine locks time slots instantly. Once you select a slot, it is immediately reserved without the risk of duplicate bookings.
                 </p>
-                <a class="btn btn-secondary btn-sm" href="{% url 'register' %}">Sign Up as Player</a>
             </div>
 
-            <div style="padding: 28px; border: 1px solid var(--border-subtle); border-radius: var(--radius-md);">
-                <h3 style="font-family: var(--font-heading); font-size: 18px; margin-bottom: 8px; font-weight: 700;">For Turf Managers</h3>
-                <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 20px; line-height: 1.6;">
-                    Manage multiple playing grounds, customize hourly time slots, oversee daily schedules, and manage player bookings seamlessly.
+            <div style="background: var(--bg-surface); padding: 28px; border-radius: var(--radius-lg); border: 1px solid var(--border-subtle); box-shadow: var(--shadow-sm); transition: var(--transition);">
+                <div style="width: 48px; height: 48px; background: #eff6ff; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 16px; color: #2563eb;">
+                    💳
+                </div>
+                <h3 style="font-family: var(--font-heading); font-size: 17px; font-weight: 700; margin-bottom: 8px;">Razorpay Secure Checkout</h3>
+                <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.6;">
+                    Pay smoothly via UPI (GPay, PhonePe, Paytm), Credit/Debit Cards, or Netbanking with 256-bit bank-grade encryption and automated receipts.
                 </p>
-                <a class="btn btn-secondary btn-sm" href="{% url 'register' %}">Sign Up as Manager</a>
             </div>
+
+            <div style="background: var(--bg-surface); padding: 28px; border-radius: var(--radius-lg); border: 1px solid var(--border-subtle); box-shadow: var(--shadow-sm); transition: var(--transition);">
+                <div style="width: 48px; height: 48px; background: #fffbeb; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 16px; color: #d97706;">
+                    ⭐
+                </div>
+                <h3 style="font-family: var(--font-heading); font-size: 17px; font-weight: 700; margin-bottom: 8px;">Verified Match Reviews</h3>
+                <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.6;">
+                    Only players who have actually booked and played at a venue can post verified match feedback, ensuring authentic turf and court quality reviews.
+                </p>
+            </div>
+
+            <div style="background: var(--bg-surface); padding: 28px; border-radius: var(--radius-lg); border: 1px solid var(--border-subtle); box-shadow: var(--shadow-sm); transition: var(--transition);">
+                <div style="width: 48px; height: 48px; background: #fdf4ff; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 16px; color: #9333ea;">
+                    🏟️
+                </div>
+                <h3 style="font-family: var(--font-heading); font-size: 17px; font-weight: 700; margin-bottom: 8px;">Turf Manager Portal</h3>
+                <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.6;">
+                    Venue owners manage real-time inventory, adjust pricing, inspect daily match rosters, and track live turnover with a single click.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action Banner -->
+<section style="background: var(--bg-subtle); border-top: 1px solid var(--border-subtle); border-bottom: 1px solid var(--border-subtle); padding: 64px 0; position: relative; overflow: hidden;">
+    <div class="container" style="text-align: center; position: relative; z-index: 2;">
+        <span class="hero-pill">
+            ⏱️ 60-Second Match Reservation
+        </span>
+        <h2 style="font-family: var(--font-heading); font-size: clamp(28px, 3.8vw, 44px); font-weight: 800; margin: 12px 0 16px; letter-spacing: -0.6px; color: #000000;">
+            Ready to Take the Field?
+        </h2>
+        <p style="font-size: 16px; color: var(--text-secondary); max-width: 580px; margin: 0 auto 30px; line-height: 1.6;">
+            Find your preferred court or turf, check open slots for today or upcoming weekends, and reserve your game instantly.
+        </p>
+        <div style="display: flex; gap: 14px; justify-content: center; flex-wrap: wrap;">
+            <a class="btn btn-primary btn-lg" href="{% url 'turf_list' %}">
+                Explore All Grounds &rarr;
+            </a>
+            {% if not user.is_authenticated %}
+                <a class="btn btn-secondary btn-lg" href="{% url 'register' %}">
+                    Sign Up as Player
+                </a>
+            {% endif %}
         </div>
     </div>
 </section>

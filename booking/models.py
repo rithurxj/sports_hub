@@ -48,7 +48,9 @@ class Turf(models.Model):
     SPORT_CHOICES = [
         ("FOOTBALL", "Football"),
         ("CRICKET", "Cricket"),
-        ("MULTI", "Multi-Sport (Football & Cricket)"),
+        ("BADMINTON", "Badminton Court"),
+        ("TENNIS", "Tennis Court"),
+        ("MULTI", "Multi-Sport"),
     ]
 
     name = models.CharField(max_length=120)
@@ -81,7 +83,42 @@ class Turf(models.Model):
             return "⚽"
         elif self.sport_type == "CRICKET":
             return "🏏"
+        elif self.sport_type == "BADMINTON":
+            return "🏸"
+        elif self.sport_type == "TENNIS":
+            return "🎾"
         return "🏆"
+
+    @property
+    def average_rating(self):
+        agg = self.reviews.aggregate(models.Avg("rating"))["rating__avg"]
+        return round(float(agg), 1) if agg is not None else 0.0
+
+    @property
+    def reviews_count(self):
+        return self.reviews.count()
+
+    @property
+    def rating_stars_display(self):
+        avg = self.average_rating
+        if avg == 0:
+            return "No reviews yet"
+        full = int(round(avg))
+        return "★" * full + "☆" * (5 - full)
+
+    @property
+    def rating_breakdown(self):
+        total = self.reviews.count()
+        if total == 0:
+            return {star: {"count": 0, "pct": 0} for star in range(5, 0, -1)}
+        breakdown = {}
+        for star in range(5, 0, -1):
+            count = self.reviews.filter(rating=star).count()
+            breakdown[star] = {
+                "count": count,
+                "pct": int(round((count / total) * 100))
+            }
+        return breakdown
 
 
 class TimeSlot(models.Model):
@@ -104,9 +141,17 @@ class TimeSlot(models.Model):
 
 class Booking(models.Model):
     STATUS_CHOICES = [
+        ("PENDING", "Payment Pending"),
         ("CONFIRMED", "Confirmed"),
         ("CANCELLED", "Cancelled"),
         ("COMPLETED", "Completed"),
+    ]
+
+    PAYMENT_STATUS_CHOICES = [
+        ("PENDING", "Pending"),
+        ("PAID", "Paid"),
+        ("FAILED", "Failed"),
+        ("REFUNDED", "Refunded"),
     ]
 
     user = models.ForeignKey(
@@ -119,6 +164,11 @@ class Booking(models.Model):
     time_slot = models.ForeignKey(TimeSlot, on_delete=models.PROTECT, related_name="bookings")
     total_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="CONFIRMED")
+    payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default="PAID")
+    razorpay_order_id = models.CharField(max_length=100, blank=True, null=True)
+    razorpay_payment_id = models.CharField(max_length=100, blank=True, null=True)
+    razorpay_signature = models.CharField(max_length=255, blank=True, null=True)
+    paid_at = models.DateTimeField(null=True, blank=True)
     notes = models.TextField(blank=True)
     booked_at = models.DateTimeField(auto_now_add=True)
 
@@ -141,5 +191,50 @@ class Booking(models.Model):
             self.total_amount = self.turf.price
         super().save(*args, **kwargs)
 
+    @property
+    def is_paid(self):
+        return self.payment_status == "PAID"
+
     def __str__(self):
         return f"{self.turf.name} - {self.date} - {self.time_slot} ({self.status})"
+
+
+class Review(models.Model):
+    RATING_CHOICES = [
+        (5, "5 ★ - Excellent"),
+        (4, "4 ★ - Very Good"),
+        (3, "3 ★ - Good"),
+        (2, "2 ★ - Fair"),
+        (1, "1 ★ - Poor"),
+    ]
+
+    turf = models.ForeignKey(
+        Turf,
+        on_delete=models.CASCADE,
+        related_name="reviews",
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="reviews",
+    )
+    booking = models.ForeignKey(
+        Booking,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="reviews",
+    )
+    rating = models.PositiveSmallIntegerField(choices=RATING_CHOICES, default=5)
+    title = models.CharField(max_length=120, blank=True)
+    comment = models.TextField(help_text="Detailed feedback about turf grass, lighting, amenities, etc.")
+    is_verified = models.BooleanField(default=True, help_text="Verified player who booked this ground")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.user.username} - {self.turf.name} ({self.rating}★)"
+

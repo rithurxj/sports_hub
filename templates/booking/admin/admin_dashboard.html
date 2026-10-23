@@ -4,43 +4,57 @@
 {% block title %}Admin Overview | Sports Hub{% endblock %}
 
 {% block content %}
-<section class="section" style="padding-top: 40px;">
+<section class="section" style="padding-top: 36px;">
     <div class="container">
         <!-- Admin Header -->
-        <div style="background: linear-gradient(135deg, #092016, #14402c); color: #fff; padding: 35px 40px; border-radius: var(--radius-lg); margin-bottom: 35px; border: 1px solid rgba(245, 158, 11, 0.3); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
+        <div style="background: linear-gradient(135deg, var(--dark-900) 0%, #064e3b 100%); color: #ffffff; padding: 32px 38px; border-radius: var(--radius-xl); margin-bottom: 32px; border: 1px solid rgba(16, 185, 129, 0.25); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; box-shadow: var(--shadow-md);">
             <div>
-                <span class="role-badge role-admin" style="margin-bottom: 10px;">🏟️ Turf Manager & Admin Portal</span>
-                <h1 style="font-family: var(--font-heading); font-size: 32px; font-weight: 800;">
+                <span class="role-badge role-admin" style="margin-bottom: 8px; background: rgba(245, 158, 11, 0.2); color: #fde68a; border-color: rgba(245, 158, 11, 0.3);">
+                    🏟️ Turf Operations &amp; Management Portal
+                </span>
+                <h1 style="font-family: var(--font-display); font-size: 30px; font-weight: 900; color: #ffffff; margin: 0;">
                     Turf Operations Hub
                 </h1>
-                <p style="color: #94a3b8; font-size: 15px; margin-top: 4px;">
-                    Monitor live turf schedules, bookings, revenue, and ground configurations.
+                <p style="color: #cbd5e1; font-size: 14px; margin-top: 4px;">
+                    Monitor live turf schedules, reservations, Razorpay revenue, and ground configurations.
                 </p>
             </div>
-            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-                <a class="btn btn-primary" href="{% url 'admin_turf_add' %}">+ Add Turf</a>
-                <a class="btn btn-secondary" href="{% url 'admin_slot_list' %}">⏰ Manage Slots</a>
-                <a class="btn btn-secondary" href="/admin/" target="_blank">⚙️ Django Admin</a>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <a class="btn btn-primary" href="{% url 'admin_turf_add' %}">
+                    <span>+</span> Add Ground
+                </a>
+                <a class="btn btn-secondary" href="{% url 'admin_slot_list' %}" style="background: rgba(255,255,255,0.1); color: #ffffff !important; border-color: rgba(255,255,255,0.2);">
+                    ⏰ Manage Slots
+                </a>
+                <a class="btn btn-secondary" href="/admin/" target="_blank" style="background: rgba(255,255,255,0.1); color: #ffffff !important; border-color: rgba(255,255,255,0.2);">
+                    ⚙️ Django Admin
+                </a>
             </div>
         </div>
 
         <!-- Metric Stat Cards -->
-        <div class="dashboard-grid-stats">
+        <div class="dashboard-grid-stats" style="grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));">
             <div class="stat-card">
-                <div class="stat-label">Active Turfs</div>
-                <div class="stat-num" style="color: var(--pitch-green-dark);">{{ active_turfs_count }} <span style="font-size: 16px; color: #64748b;">/ {{ turfs_count }}</span></div>
+                <div class="stat-label">Active Venues</div>
+                <div class="stat-num" style="color: var(--emerald-600);">
+                    {{ active_turfs_count }} <span style="font-size: 16px; color: var(--text-muted); font-weight: 500;">/ {{ turfs_count }}</span>
+                </div>
             </div>
-            <div class="stat-card amber">
-                <div class="stat-label">Today's Bookings</div>
+            <div class="stat-card">
+                <div class="stat-label">Today's Matches</div>
                 <div class="stat-num" style="color: var(--accent-amber);">{{ today_bookings.count }}</div>
             </div>
-            <div class="stat-card blue">
-                <div class="stat-label">Total Bookings</div>
-                <div class="stat-num" style="color: var(--accent-blue);">{{ total_bookings_count }}</div>
+            <div class="stat-card">
+                <div class="stat-label">Razorpay Revenue</div>
+                <div class="stat-num" style="color: var(--emerald-700);">₹{{ total_revenue|floatformat:0 }}</div>
+                <div style="font-size: 11.5px; color: var(--text-muted); margin-top: 2px;">{{ paid_bookings_count }} online transaction{{ paid_bookings_count|pluralize }}</div>
             </div>
             <div class="stat-card">
-                <div class="stat-label">Total Confirmed Revenue</div>
-                <div class="stat-num" style="color: var(--pitch-green-dark);">₹{{ total_revenue|floatformat:0 }}</div>
+                <div class="stat-label">Player Satisfaction</div>
+                <div class="stat-num" style="color: #d97706;">
+                    {% if reviews_count > 0 %}{{ avg_rating }} ★{% else %}—{% endif %}
+                </div>
+                <div style="font-size: 11.5px; color: var(--text-muted); margin-top: 2px;">{{ reviews_count }} player review{{ reviews_count|pluralize }}</div>
             </div>
         </div>
 
@@ -49,9 +63,9 @@
             <div class="section-title-wrap">
                 <div>
                     <span class="section-eyebrow">TODAY'S SCHEDULE ({{ today|date:"D, d M Y" }})</span>
-                    <h2 class="section-title" style="font-size: 24px;">Matches Scheduled Today</h2>
+                    <h2 class="section-title" style="font-size: 22px;">Matches Scheduled Today</h2>
                 </div>
-                <a href="{% url 'admin_booking_list' %}?date={{ today|date:'Y-m-d' }}">View Detailed Schedule &rarr;</a>
+                <a class="btn btn-outline btn-sm" href="{% url 'admin_booking_list' %}?date={{ today|date:'Y-m-d' }}">View Detailed Schedule &rarr;</a>
             </div>
 
             <div class="table-responsive">
@@ -62,24 +76,30 @@
                             <th>Ground</th>
                             <th>Sport</th>
                             <th>Booked By</th>
-                            <th>Phone</th>
+                            <th>Payment</th>
                             <th>Status</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for b in today_bookings %}
                         <tr>
-                            <td><strong>{{ b.time_slot }}</strong></td>
-                            <td>{{ b.turf.name }}</td>
+                            <td><strong style="color: var(--emerald-600);">{{ b.time_slot }}</strong></td>
+                            <td><strong>{{ b.turf.name }}</strong></td>
                             <td>{{ b.turf.sport_icon }} {{ b.turf.get_sport_type_display }}</td>
                             <td>{{ b.user.first_name|default:b.user.username }}</td>
-                            <td>{{ b.user.profile.phone|default:"—" }}</td>
+                            <td>
+                                {% if b.payment_status == 'PAID' %}
+                                    <span class="status-badge" style="background: #f0fdf4; color: #166534; border-color: #bbf7d0;">✓ Paid (Razorpay)</span>
+                                {% else %}
+                                    <span class="status-badge status-completed">{{ b.payment_status }}</span>
+                                {% endif %}
+                            </td>
                             <td><span class="status-badge status-confirmed">Confirmed</span></td>
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="6" style="text-align: center; padding: 30px; color: #64748b;">
-                                No matches booked for today yet.
+                            <td colspan="6" style="text-align: center; padding: 36px 20px; color: var(--text-muted); font-size: 14px;">
+                                No matches scheduled for today yet.
                             </td>
                         </tr>
                         {% endfor %}
@@ -88,14 +108,14 @@
             </div>
         </div>
 
-        <!-- Recent Booking Requests -->
-        <div>
+        <!-- Recent Booking Reservations & Payments -->
+        <div style="margin-bottom: 40px;">
             <div class="section-title-wrap">
                 <div>
                     <span class="section-eyebrow">ACTIVITY STREAM</span>
-                    <h2 class="section-title" style="font-size: 24px;">Recent Booking Reservations</h2>
+                    <h2 class="section-title" style="font-size: 22px;">Recent Booking Reservations</h2>
                 </div>
-                <a href="{% url 'admin_booking_list' %}">Manage All Bookings &rarr;</a>
+                <a class="btn btn-outline btn-sm" href="{% url 'admin_booking_list' %}">Manage All Bookings &rarr;</a>
             </div>
 
             <div class="table-responsive">
@@ -108,23 +128,37 @@
                             <th>Match Date</th>
                             <th>Time Slot</th>
                             <th>Amount</th>
-                            <th>Status</th>
+                            <th>Payment</th>
+                            <th>Booking Status</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for b in recent_bookings %}
                         <tr>
-                            <td>#{{ b.id }}</td>
+                            <td><strong style="color: var(--dark-900);">#{{ b.id }}</strong></td>
                             <td><strong>{{ b.user.username }}</strong></td>
                             <td>{{ b.turf.name }}</td>
                             <td>{{ b.date|date:"d M Y" }}</td>
-                            <td>{{ b.time_slot }}</td>
-                            <td>₹{{ b.total_amount|default:b.turf.price|floatformat:0 }}</td>
+                            <td><strong style="color: var(--emerald-600);">{{ b.time_slot }}</strong></td>
+                            <td><strong>₹{{ b.total_amount|default:b.turf.price|floatformat:0 }}</strong></td>
+                            <td>
+                                {% if b.payment_status == 'PAID' %}
+                                    <span class="status-badge" style="background: #f0fdf4; color: #166534; border-color: #bbf7d0;" title="Razorpay: {{ b.razorpay_payment_id }}">
+                                        ✓ Paid
+                                    </span>
+                                {% elif b.payment_status == 'PENDING' %}
+                                    <span class="status-badge status-pending">Pending</span>
+                                {% else %}
+                                    <span class="status-badge status-completed">{{ b.payment_status }}</span>
+                                {% endif %}
+                            </td>
                             <td>
                                 {% if b.status == 'CONFIRMED' %}
                                     <span class="status-badge status-confirmed">Confirmed</span>
                                 {% elif b.status == 'CANCELLED' %}
                                     <span class="status-badge status-cancelled">Cancelled</span>
+                                {% elif b.status == 'PENDING' %}
+                                    <span class="status-badge status-pending">Pending</span>
                                 {% else %}
                                     <span class="status-badge status-completed">{{ b.status }}</span>
                                 {% endif %}
@@ -132,11 +166,49 @@
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="7" style="text-align: center; padding: 30px; color: #64748b;">No recent bookings recorded.</td>
+                            <td colspan="8" style="text-align: center; padding: 36px 20px; color: var(--text-muted); font-size: 14px;">No recent bookings recorded.</td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
+            </div>
+        </div>
+
+        <!-- Recent Customer Feedback & Reviews Stream -->
+        <div>
+            <div class="section-title-wrap">
+                <div>
+                    <span class="section-eyebrow">VOICE OF PLAYERS</span>
+                    <h2 class="section-title" style="font-size: 22px;">Latest Ground Reviews &amp; Feedback</h2>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px;">
+                {% for r in recent_reviews %}
+                <div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 20px; box-shadow: var(--shadow-xs);">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+                        <div>
+                            <strong style="font-size: 14px; color: var(--dark-900);">{{ r.turf.name }}</strong>
+                            <div style="font-size: 12px; color: var(--text-muted);">By {{ r.user.first_name|default:r.user.username }} &bull; {{ r.created_at|date:"d M Y" }}</div>
+                        </div>
+                        <span style="color: #f59e0b; font-size: 15px;">
+                            {% for i in "12345"|make_list %}
+                                {% if forloop.counter <= r.rating %}★{% else %}☆{% endif %}
+                            {% endfor %}
+                        </span>
+                    </div>
+                    {% if r.title %}
+                    <div style="font-weight: 700; font-size: 13.5px; margin-bottom: 4px; color: var(--dark-900);">{{ r.title }}</div>
+                    {% endif %}
+                    <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.55; margin: 0;">
+                        {{ r.comment|truncatewords:24 }}
+                    </p>
+                </div>
+                {% empty %}
+                <div style="grid-column: 1/-1; background: var(--bg-surface); border: 1px dashed var(--border-subtle); border-radius: var(--radius-lg); padding: 36px 20px; text-align: center; color: var(--text-muted); font-size: 14px;">
+                    No reviews received yet from players.
+                </div>
+                {% endfor %}
             </div>
         </div>
     </div>

@@ -111,18 +111,231 @@ class RoleBasedAuthAndBookingTests(TestCase):
         tomorrow = timezone.localdate() + datetime.timedelta(days=1)
 
         self.client.login(username="customer_test", password="testpassword123")
-        # First booking succeeds
+        # First booking creates pending reservation and redirects to payment checkout
         post_data = {
             "date": tomorrow.isoformat(),
             "time_slot": self.slot.id,
             "notes": "First match",
         }
         resp = self.client.post(reverse("book_turf", kwargs={"pk": self.turf.pk}), post_data)
-        self.assertRedirects(resp, reverse("my_bookings"))
-        self.assertEqual(Booking.objects.filter(turf=self.turf, date=tomorrow, status="CONFIRMED").count(), 1)
+        booking = Booking.objects.filter(turf=self.turf, date=tomorrow, user=self.customer_user).first()
+        self.assertIsNotNone(booking)
+        self.assertRedirects(resp, reverse("payment_checkout", kwargs={"pk": booking.pk}))
 
-        # Second booking attempt on same slot fails with error
+        # Follow redirect to checkout page which sets razorpay_order_id
+        checkout_resp = self.client.get(resp.url)
+        self.assertEqual(checkout_resp.status_code, 200)
+        booking.refresh_from_db()
+
+        # Complete payment via verify endpoint
+        verify_data = {
+            "booking_id": booking.id,
+            "razorpay_payment_id": "pay_test_12345",
+            "razorpay_order_id": booking.razorpay_order_id or "order_test_12345",
+            "razorpay_signature": "sim_signature_12345",
+            "is_simulation": "1",
+        }
+        verify_resp = self.client.post(reverse("payment_verify"), verify_data)
+        self.assertRedirects(verify_resp, reverse("payment_confirmation", kwargs={"pk": booking.pk}))
+        booking.refresh_from_db()
+        self.assertEqual(booking.status, "CONFIRMED")
+        self.assertEqual(booking.payment_status, "PAID")
+
+        # Second booking attempt on same slot fails because it's already confirmed
         resp2 = self.client.post(reverse("book_turf", kwargs={"pk": self.turf.pk}), post_data)
         self.assertEqual(resp2.status_code, 200)
         self.assertContains(resp2, "already booked")
         self.assertEqual(Booking.objects.filter(turf=self.turf, date=tomorrow, status="CONFIRMED").count(), 1)
+
+    def test_razorpay_checkout_and_verification(self):
+        """Test Razorpay checkout page loads and payment verification completes."""
+        tomorrow = timezone.localdate() + datetime.timedelta(days=2)
+        booking = Booking.objects.create(
+            user=self.customer_user,
+            turf=self.turf,
+            date=tomorrow,
+            time_slot=self.slot,
+            status="PENDING",
+            payment_status="PENDING",
+            total_amount=self.turf.price,
+        )
+
+        self.client.login(username="customer_test", password="testpassword123")
+        checkout_resp = self.client.get(reverse("payment_checkout", kwargs={"pk": booking.pk}))
+        self.assertEqual(checkout_resp.status_code, 200)
+        self.assertContains(checkout_resp, "Razorpay Secure Checkout")
+        booking.refresh_from_db()
+
+        # Simulate successful payment
+        post_data = {
+            "booking_id": booking.id,
+            "razorpay_payment_id": "pay_sim_98765",
+            "razorpay_order_id": booking.razorpay_order_id or "order_test_98765",
+            "razorpay_signature": "sim_sig_test",
+            "is_simulation": "1",
+        }
+        verify_resp = self.client.post(reverse("payment_verify"), post_data)
+        self.assertRedirects(verify_resp, reverse("payment_confirmation", kwargs={"pk": booking.pk}))
+
+        booking.refresh_from_db()
+        self.assertEqual(booking.status, "CONFIRMED")
+        self.assertEqual(booking.payment_status, "PAID")
+        self.assertEqual(booking.razorpay_payment_id, "pay_sim_98765")
+        self.assertIsNotNone(booking.paid_at)
+
+    def test_feedback_and_review_workflow(self):
+        """Test submitting player feedback and review, and computing average rating."""
+        from booking.models import Review
+
+        # Create confirmed booking for verified status
+        tomorrow = timezone.localdate() + datetime.timedelta(days=1)
+        booking = Booking.objects.create(
+            user=self.customer_user,
+            turf=self.turf,
+            date=tomorrow,
+            time_slot=self.slot,
+            status="CONFIRMED",
+            payment_status="PAID",
+        )
+
+        self.client.login(username="customer_test", password="testpassword123")
+
+        # GET review page
+        get_resp = self.client.get(reverse("add_review", kwargs={"turf_id": self.turf.pk}), {"booking": booking.id})
+        self.assertEqual(get_resp.status_code, 200)
+        self.assertContains(get_resp, "Rate & Review Ground")
+
+
+        # POST review
+        post_data = {
+            "rating": 5,
+            "title": "Superb playing turf",
+            "comment": "FIFA standard artificial grass, smooth ball bounce, bright floodlights!",
+            "booking_id": booking.id,
+        }
+        post_resp = self.client.post(reverse("add_review", kwargs={"turf_id": self.turf.pk}), post_data)
+        self.assertRedirects(post_resp, reverse("turf_detail", kwargs={"pk": self.turf.pk}))
+
+        review = Review.objects.filter(turf=self.turf, user=self.customer_user).first()
+        self.assertIsNotNone(review)
+        self.assertEqual(review.rating, 5)
+        self.assertTrue(review.is_verified)
+        self.assertEqual(self.turf.average_rating, 5.0)
+        self.assertEqual(self.turf.reviews_count, 1)
+
+        # Check turf detail contains review
+        detail_resp = self.client.get(reverse("turf_detail", kwargs={"pk": self.turf.pk}))
+        self.assertContains(detail_resp, "Superb playing turf")
+        self.assertContains(detail_resp, "Verified Match")
+
+    def test_badminton_and_tennis_court_booking_and_filters(self):
+        """Test badminton court and tennis court creation, icons, filtering, and booking."""
+        badminton_court = Turf.objects.create(
+            name="Apex Indoor Badminton Arena",
+            sport_type="BADMINTON",
+            location="Indiranagar, Bangalore",
+            price=600.00,
+            surface_type="BWF Approved Wooden Court",
+            is_active=True,
+        )
+        tennis_court = Turf.objects.create(
+            name="Grand Slam Tennis Arena",
+            sport_type="TENNIS",
+            location="Koramangala, Bangalore",
+            price=900.00,
+            surface_type="DecoTurf Championship Hard Court",
+            is_active=True,
+        )
+
+        self.assertEqual(badminton_court.sport_icon, "🏸")
+        self.assertEqual(badminton_court.get_sport_type_display(), "Badminton Court")
+        self.assertEqual(tennis_court.sport_icon, "🎾")
+        self.assertEqual(tennis_court.get_sport_type_display(), "Tennis Court")
+
+        # Test filtering by BADMINTON
+        resp_badminton = self.client.get(reverse("turf_list"), {"sport": "BADMINTON"})
+        self.assertEqual(resp_badminton.status_code, 200)
+        self.assertContains(resp_badminton, "Apex Indoor Badminton Arena")
+        self.assertNotContains(resp_badminton, "Grand Slam Tennis Arena")
+
+        # Test filtering by TENNIS
+        resp_tennis = self.client.get(reverse("turf_list"), {"sport": "TENNIS"})
+        self.assertEqual(resp_tennis.status_code, 200)
+        self.assertContains(resp_tennis, "Grand Slam Tennis Arena")
+        self.assertNotContains(resp_tennis, "Apex Indoor Badminton Arena")
+
+        # Test booking a badminton court slot
+        self.client.login(username="customer_test", password="testpassword123")
+        tomorrow = timezone.localdate() + datetime.timedelta(days=1)
+        book_resp = self.client.post(
+            reverse("book_turf", kwargs={"pk": badminton_court.pk}),
+            {
+                "date": tomorrow.isoformat(),
+                "time_slot": self.slot.id,
+                "notes": "Singles badminton practice",
+            }
+        )
+        # Should redirect to payment checkout
+        booking = Booking.objects.filter(turf=badminton_court, date=tomorrow, time_slot=self.slot).first()
+        self.assertIsNotNone(booking)
+        self.assertEqual(booking.total_amount, 600.00)
+        self.assertRedirects(book_resp, reverse("payment_checkout", kwargs={"pk": booking.pk}))
+
+    def test_scoreboard_access_and_roles(self):
+        """Test live scoreboard is accessible by customer users and hidden from admins."""
+        # 1. Anonymous user redirected to login
+        anon_resp = self.client.get(reverse("scoreboard"))
+        self.assertEqual(anon_resp.status_code, 302)
+        self.assertIn(reverse("login"), anon_resp.url)
+
+        # 2. Customer login -> 200 OK with all 4 sports panels
+        self.client.login(username="customer_test", password="testpassword123")
+        cust_resp = self.client.get(reverse("scoreboard"))
+        self.assertEqual(cust_resp.status_code, 200)
+        self.assertContains(cust_resp, "Box Cricket")
+        self.assertContains(cust_resp, "Football / Futsal")
+        self.assertContains(cust_resp, "Tennis Court Scoreboard")
+        self.assertContains(cust_resp, "Badminton 21-Point Arena")
+
+        # 3. Customer sees Scoreboard option near Explore Grounds in navbar
+        home_resp = self.client.get(reverse("home"))
+        self.assertContains(home_resp, "Scoreboard")
+
+        # 4. Admin user is redirected away with message and does not have Scoreboard in navbar
+        self.client.login(username="admin_test", password="testpassword123")
+        admin_resp = self.client.get(reverse("scoreboard"))
+        self.assertRedirects(admin_resp, reverse("admin_dashboard"))
+
+        admin_home_resp = self.client.get(reverse("home"))
+        # Scoreboard link should not be rendered in admin nav
+        self.assertNotContains(admin_home_resp, reverse("scoreboard"))
+
+    def test_csrf_failure_handling(self):
+        """Test custom csrf_failure_view graceful redirect and 403 template rendering."""
+        from django.test import RequestFactory
+        from booking.views import csrf_failure_view
+
+        factory = RequestFactory()
+
+        # Case 1: POST request with same-host referer redirects back with message
+        request = factory.post("/turfs/1/book/", HTTP_REFERER="http://testserver/turfs/1/book/")
+        from django.contrib.messages.storage.fallback import FallbackStorage
+        setattr(request, "session", self.client.session)
+        messages_storage = FallbackStorage(request)
+        setattr(request, "_messages", messages_storage)
+
+        response = csrf_failure_view(request, reason="CSRF token from POST incorrect.")
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response["Location"], "http://testserver/turfs/1/book/")
+
+        # Case 2: Request without referer renders 403_csrf template with 403 status
+        no_ref_request = factory.get("/turfs/1/book/")
+        setattr(no_ref_request, "session", self.client.session)
+        no_ref_request._messages = FallbackStorage(no_ref_request)
+        no_ref_resp = csrf_failure_view(no_ref_request, reason="CSRF cookie not set.")
+        self.assertEqual(no_ref_resp.status_code, 403)
+        self.assertContains(no_ref_resp, "Security Token Refreshed", status_code=403)
+
+
+
+

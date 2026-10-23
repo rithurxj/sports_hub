@@ -1,0 +1,167 @@
+{% extends "booking/base.html" %}
+{% load static %}
+
+{% block title %}Booking Confirmed #{{ booking.id }} | Sports Hub{% endblock %}
+
+{% block content %}
+<section class="section" style="padding-top: 36px;">
+    <div class="container" style="max-width: 820px;">
+        <!-- Success Banner -->
+        <div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-xl); padding: 36px 28px; text-align: center; margin-bottom: 28px; box-shadow: var(--shadow-sm);">
+            <div style="width: 72px; height: 72px; background: var(--emerald-50); border: 2.5px solid var(--emerald-300); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 34px; margin: 0 auto 16px; color: var(--emerald-600); box-shadow: var(--shadow-glow);">
+                ✓
+            </div>
+
+            <span class="section-eyebrow" style="color: var(--emerald-600);">Payment &amp; Slot Confirmed</span>
+            <h1 style="font-family: var(--font-heading); font-size: 30px; font-weight: 800; margin-top: 4px; margin-bottom: 8px; color: #000000;">
+                You're Ready to Take the Field!
+            </h1>
+            <p style="color: var(--text-secondary); font-size: 14.5px; max-width: 520px; margin: 0 auto 20px; line-height: 1.6;">
+                Your reservation at <strong>{{ turf.name }}</strong> has been locked with conflict-free guarantee. Your match pass has been issued.
+            </p>
+
+            <div style="display: inline-flex; align-items: center; gap: 8px; background: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); padding: 8px 16px; border-radius: var(--radius-full); font-size: 13px; font-weight: 600;">
+                <span>💳 Razorpay Payment ID:</span>
+                <code style="font-weight: 700; color: var(--emerald-700);">{{ booking.razorpay_payment_id|default:"pay_confirmed" }}</code>
+            </div>
+        </div>
+
+        <!-- Official Athletic Match Pass Ticket -->
+        <div class="ticket-pass" style="margin-bottom: 28px;">
+            <div class="ticket-pass-header">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 24px;">{{ turf.sport_icon }}</span>
+                        <div>
+                            <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--emerald-400); font-weight: 700;">Official Match Pass</div>
+                            <h2 style="font-family: var(--font-display); font-size: 22px; font-weight: 800; margin: 0; color: #ffffff;">{{ turf.name }}</h2>
+                        </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <span class="status-badge status-confirmed" style="background: rgba(16, 185, 129, 0.2); color: #34d399; border-color: rgba(52, 211, 153, 0.4); font-size: 12px; padding: 5px 12px;">
+                            ● CONFIRMED
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ticket-perforation"></div>
+
+            <div style="padding: 28px 32px; background: var(--bg-surface);">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 20px; font-size: 14px;">
+                    <div>
+                        <span style="color: var(--text-muted); font-size: 12px; display: block; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Sport &amp; Surface</span>
+                        <strong style="color: var(--dark-900); font-size: 15px;">{{ turf.get_sport_type_display }}</strong>
+                        <div style="font-size: 12.5px; color: var(--text-muted);">{{ turf.surface_type }}</div>
+                    </div>
+
+                    <div>
+                        <span style="color: var(--text-muted); font-size: 12px; display: block; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Match Date</span>
+                        <strong style="color: var(--dark-900); font-size: 15px;">{{ booking.date|date:"l, d F Y" }}</strong>
+                    </div>
+
+                    <div>
+                        <span style="color: var(--text-muted); font-size: 12px; display: block; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Time Slot</span>
+                        <strong style="color: var(--emerald-600); font-size: 15px;">{{ booking.time_slot }}</strong>
+                    </div>
+
+                    <div>
+                        <span style="color: var(--text-muted); font-size: 12px; display: block; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Amount Paid</span>
+                        <strong style="font-size: 17px; color: var(--emerald-700);">₹{{ booking.total_amount|floatformat:0 }}</strong>
+                        <div style="font-size: 11px; color: var(--emerald-600); font-weight: 600;">Razorpay Verified</div>
+                    </div>
+                </div>
+
+                {% if turf.contact_number %}
+                <div style="margin-top: 24px; padding-top: 18px; border-top: 1px dashed var(--border-subtle); font-size: 13.5px; color: var(--text-secondary); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                    <span>📍 Venue Address: <strong style="color: var(--dark-900);">{{ turf.location }}</strong></span>
+                    <span>📞 Turf Desk: <strong style="color: var(--dark-900);">{{ turf.contact_number }}</strong></span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Integrated Feedback & Review Card -->
+        <div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-xl); padding: 28px; margin-bottom: 28px; box-shadow: var(--shadow-sm);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+                <div>
+                    <span class="section-eyebrow" style="color: var(--accent-amber);">Match Feedback</span>
+                    <h2 style="font-family: var(--font-heading); font-size: 18px; font-weight: 700; margin-top: 2px; color: var(--dark-900);">
+                        {% if existing_review %}Your Review for {{ turf.name }}{% else %}Rate Your Match Experience{% endif %}
+                    </h2>
+                    <p style="font-size: 13px; color: var(--text-secondary); margin-top: 2px;">
+                        Help other players discover the best courts by sharing feedback on artificial grass, lighting, and nets.
+                    </p>
+                </div>
+                {% if existing_review %}
+                <span class="status-badge" style="background: #fef3c7; color: #92400e; border-color: #fde68a;">
+                    ⭐ Reviewed ({{ existing_review.rating }}/5)
+                </span>
+                {% endif %}
+            </div>
+
+            {% if existing_review %}
+                <div style="background: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 18px; margin-bottom: 14px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <span style="color: #f59e0b; font-size: 17px;">
+                            {% for i in "12345"|make_list %}
+                                {% if forloop.counter <= existing_review.rating %}★{% else %}☆{% endif %}
+                            {% endfor %}
+                        </span>
+                        <span style="font-size: 12px; color: var(--text-muted);">{{ existing_review.created_at|date:"d M Y" }}</span>
+                    </div>
+                    {% if existing_review.title %}
+                        <strong style="font-size: 14px; display: block; margin-bottom: 4px; color: var(--dark-900);">{{ existing_review.title }}</strong>
+                    {% endif %}
+                    <p style="font-size: 13.5px; color: var(--text-secondary); line-height: 1.55; margin: 0;">{{ existing_review.comment }}</p>
+                </div>
+                <a href="{% url 'add_review' turf.pk %}?booking={{ booking.id }}" class="btn btn-outline btn-sm">
+                    ✎ Edit Feedback
+                </a>
+            {% else %}
+                <form method="post" action="{% url 'add_review' turf.pk %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="booking_id" value="{{ booking.id }}">
+                    <input type="hidden" name="next" value="{% url 'payment_confirmation' booking.pk %}">
+
+                    <div style="display: grid; grid-template-columns: 160px 1fr; gap: 14px; margin-bottom: 14px;">
+                        <div class="form-group" style="margin: 0;">
+                            <label for="{{ review_form.rating.id_for_label }}" style="font-size: 12.5px;">Rating Score</label>
+                            {{ review_form.rating }}
+                        </div>
+                        <div class="form-group" style="margin: 0;">
+                            <label for="{{ review_form.title.id_for_label }}" style="font-size: 12.5px;">Headline Summary</label>
+                            {{ review_form.title }}
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 16px;">
+                        <label for="{{ review_form.comment.id_for_label }}" style="font-size: 12.5px;">Feedback / Match Details</label>
+                        {{ review_form.comment }}
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-sm">
+                        Submit Match Feedback
+                    </button>
+                </form>
+            {% endif %}
+        </div>
+
+        <!-- Action Links -->
+        <div style="display: flex; gap: 14px; justify-content: center; flex-wrap: wrap;">
+            <a href="{% url 'my_bookings' %}" class="btn btn-primary">
+                <span>📅</span> View in My Bookings &rarr;
+            </a>
+            <a href="{% url 'turf_detail' turf.pk %}" class="btn btn-secondary">
+                View Ground Details
+            </a>
+            <a href="{% url 'home' %}" class="btn btn-outline">
+                Home Page
+            </a>
+            <button onclick="window.print()" class="btn btn-secondary">
+                <span>🖨️</span> Print Match Pass
+            </button>
+        </div>
+    </div>
+</section>
+{% endblock %}

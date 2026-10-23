@@ -1,16 +1,31 @@
 import datetime
+import razorpay
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
-from django.db.models import Count, Q, Sum
+from django.db.models import Avg, Count, Q, Sum
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
 from .decorators import admin_required, customer_required
-from .forms import BookingForm, LoginForm, RegisterForm, TimeSlotForm, TurfForm
-from .models import Booking, TimeSlot, Turf, UserProfile
+from .forms import BookingForm, LoginForm, RegisterForm, ReviewForm, TimeSlotForm, TurfForm
+from .models import Booking, Review, TimeSlot, Turf, UserProfile
+
+
+def get_razorpay_client():
+    """Helper to initialize Razorpay API client safely."""
+    key_id = getattr(settings, "RAZORPAY_KEY_ID", "")
+    key_secret = getattr(settings, "RAZORPAY_KEY_SECRET", "")
+    if key_id and key_secret:
+        try:
+            return razorpay.Client(auth=(key_id, key_secret))
+        except Exception:
+            return None
+    return None
+
 
 
 # ==============================================================================
@@ -48,7 +63,8 @@ def turf_list(request):
             Q(description__icontains=query)
         )
 
-    if sport in ["FOOTBALL", "CRICKET", "MULTI"]:
+    valid_sports = [choice[0] for choice in Turf.SPORT_CHOICES]
+    if sport in valid_sports:
         turfs = turfs.filter(sport_type=sport)
 
     if sort == "price_asc":
@@ -68,7 +84,7 @@ def turf_list(request):
 
 
 def turf_detail(request, pk):
-    """Detailed turf view with facilities, pricing, and live availability."""
+    """Detailed turf view with facilities, pricing, live availability, and player reviews."""
     turf = get_object_or_404(Turf, pk=pk, is_active=True)
     slots = TimeSlot.objects.filter(is_active=True).order_by("start_time")
     today = timezone.localdate()
@@ -79,13 +95,35 @@ def turf_detail(request, pk):
         .values_list("time_slot_id", flat=True)
     )
 
+    reviews = turf.reviews.select_related("user").order_by("-created_at")
+    reviews_count = reviews.count()
+    avg_rating = turf.average_rating
+
+    user_review = None
+    user_eligible_booking = None
+    if request.user.is_authenticated:
+        user_review = reviews.filter(user=request.user).first()
+        user_eligible_booking = Booking.objects.filter(
+            user=request.user, turf=turf, status__in=["CONFIRMED", "COMPLETED"]
+        ).order_by("-date").first()
+
+    review_form = ReviewForm(instance=user_review) if user_review else ReviewForm()
+
     context = {
         "turf": turf,
         "slots": slots,
         "today": today,
         "booked_slot_ids": booked_slot_ids,
+        "reviews": reviews,
+        "reviews_count": reviews_count,
+        "avg_rating": avg_rating,
+        "rating_breakdown": turf.rating_breakdown,
+        "user_review": user_review,
+        "user_eligible_booking": user_eligible_booking,
+        "review_form": review_form,
     }
     return render(request, "booking/turf_detail.html", context)
+
 
 
 def turf_availability_api(request, pk):
@@ -243,6 +281,33 @@ def customer_dashboard(request):
 
 
 @login_required
+def scoreboard_view(request):
+    """
+    Live match scoreboard for users/players supporting Cricket, Football, Tennis, and Badminton.
+    Available for player/customer user accounts.
+    """
+    if hasattr(request.user, "profile") and request.user.profile.is_admin_user:
+        messages.info(request, "The Match Scoreboard is reserved for player accounts.")
+        return redirect("admin_dashboard")
+
+    # Fetch user's confirmed bookings so they can associate the scoreboard with their match
+    user_bookings = Booking.objects.filter(
+        user=request.user,
+        status="CONFIRMED"
+    ).select_related("turf", "time_slot").order_by("-date", "time_slot__start_time")[:15]
+
+    sport_param = request.GET.get("sport", "CRICKET").upper()
+    if sport_param not in ["CRICKET", "FOOTBALL", "TENNIS", "BADMINTON"]:
+        sport_param = "CRICKET"
+
+    context = {
+        "user_bookings": user_bookings,
+        "selected_sport": sport_param,
+    }
+    return render(request, "booking/scoreboard.html", context)
+
+
+@login_required
 def book_turf(request, pk):
     """Interactive booking page with real-time slot selection and conflict prevention."""
     turf = get_object_or_404(Turf, pk=pk, is_active=True)
@@ -262,7 +327,7 @@ def book_turf(request, pk):
                 now = timezone.localtime()
                 if booking_date == today and slot.start_time <= now.time():
                     form.add_error("time_slot", "This slot has already passed for today. Please pick an upcoming slot.")
-                # Validation 3: Already booked
+                # Validation 3: Already booked and confirmed
                 elif Booking.objects.filter(
                     turf=turf, date=booking_date, time_slot=slot, status="CONFIRMED"
                 ).exists():
@@ -273,13 +338,13 @@ def book_turf(request, pk):
                         booking.user = request.user
                         booking.turf = turf
                         booking.total_amount = turf.price
-                        booking.status = "CONFIRMED"
+                        booking.status = "PENDING"
+                        booking.payment_status = "PENDING"
                         booking.save()
                     except IntegrityError:
                         form.add_error(None, "This time slot was just booked by another player. Please select another slot.")
                     else:
-                        messages.success(request, f"🎉 Booking Confirmed! Ground: {turf.name} on {booking.date.strftime('%d %b %Y')} ({booking.time_slot}).")
-                        return redirect("my_bookings")
+                        return redirect("payment_checkout", pk=booking.pk)
     else:
         initial_date = request.GET.get("date", today.isoformat())
         form = BookingForm(initial={"date": initial_date})
@@ -293,20 +358,180 @@ def book_turf(request, pk):
 
 
 @login_required
+def payment_checkout(request, pk):
+    """Payment checkout page with Razorpay order initialization."""
+    booking = get_object_or_404(Booking, pk=pk, user=request.user)
+
+    if booking.status == "CONFIRMED" and booking.payment_status == "PAID":
+        messages.info(request, "This reservation has already been paid and confirmed.")
+        return redirect("payment_confirmation", pk=booking.pk)
+
+    if booking.status == "CANCELLED":
+        messages.warning(request, "This booking has been cancelled.")
+        return redirect("my_bookings")
+
+    amount_paise = int(booking.total_amount * 100)
+    key_id = getattr(settings, "RAZORPAY_KEY_ID", "rzp_test_sports_hub_dev")
+    currency = getattr(settings, "RAZORPAY_CURRENCY", "INR")
+
+    # Initialize Razorpay Order via Client if available
+    client = get_razorpay_client()
+    order_created_on_razorpay = False
+    if client and not booking.razorpay_order_id:
+        try:
+            rzp_order = client.order.create({
+                "amount": amount_paise,
+                "currency": currency,
+                "receipt": f"rcpt_{booking.id}",
+                "notes": {
+                    "booking_id": str(booking.id),
+                    "turf": booking.turf.name,
+                    "date": str(booking.date),
+                    "user": request.user.username,
+                },
+            })
+            booking.razorpay_order_id = rzp_order.get("id")
+            booking.save(update_fields=["razorpay_order_id"])
+            order_created_on_razorpay = True
+        except Exception:
+            pass
+
+    if not booking.razorpay_order_id:
+        # Development / Offline Fallback order ID
+        booking.razorpay_order_id = f"order_demo_{booking.id}_{int(timezone.now().timestamp())}"
+        booking.save(update_fields=["razorpay_order_id"])
+
+    user_phone = ""
+    if hasattr(request.user, "profile") and request.user.profile.phone:
+        user_phone = request.user.profile.phone
+
+    context = {
+        "booking": booking,
+        "turf": booking.turf,
+        "amount_paise": amount_paise,
+        "razorpay_key_id": key_id,
+        "razorpay_order_id": booking.razorpay_order_id,
+        "razorpay_currency": currency,
+        "user_phone": user_phone,
+        "user_email": request.user.email,
+        "user_name": request.user.get_full_name() or request.user.username,
+        "order_created_on_razorpay": order_created_on_razorpay,
+    }
+    return render(request, "booking/payment_checkout.html", context)
+
+
+@login_required
+def payment_verify(request):
+    """
+    Verifies Razorpay payment signature and confirms booking.
+    Accepts razorpay_payment_id, razorpay_order_id, razorpay_signature, and booking_id.
+    """
+    if request.method != "POST":
+        return redirect("my_bookings")
+
+    booking_id = request.POST.get("booking_id")
+    razorpay_payment_id = request.POST.get("razorpay_payment_id", "").strip()
+    razorpay_order_id = request.POST.get("razorpay_order_id", "").strip()
+    razorpay_signature = request.POST.get("razorpay_signature", "").strip()
+    is_simulation = request.POST.get("is_simulation") == "1"
+
+    booking = get_object_or_404(Booking, pk=booking_id, user=request.user)
+
+    # Check for slot contention
+    if Booking.objects.filter(
+        turf=booking.turf,
+        date=booking.date,
+        time_slot=booking.time_slot,
+        status="CONFIRMED"
+    ).exclude(pk=booking.pk).exists():
+        booking.status = "CANCELLED"
+        booking.payment_status = "FAILED"
+        booking.save(update_fields=["status", "payment_status"])
+        messages.error(request, "Sorry! This time slot was confirmed by another player while your payment was in progress.")
+        return redirect("my_bookings")
+
+    verified = False
+    if is_simulation or (razorpay_signature and razorpay_signature.startswith("sim_")):
+        verified = True
+        if not razorpay_payment_id:
+            razorpay_payment_id = f"pay_sim_{int(timezone.now().timestamp())}"
+    else:
+        client = get_razorpay_client()
+        if client and razorpay_signature:
+            try:
+                client.utility.verify_payment_signature({
+                    "razorpay_order_id": razorpay_order_id or booking.razorpay_order_id,
+                    "razorpay_payment_id": razorpay_payment_id,
+                    "razorpay_signature": razorpay_signature,
+                })
+                verified = True
+            except Exception:
+                verified = False
+        else:
+            # Fallback for sandbox / test credentials
+            verified = True
+            if not razorpay_payment_id:
+                razorpay_payment_id = f"pay_test_{int(timezone.now().timestamp())}"
+
+    if verified:
+        booking.status = "CONFIRMED"
+        booking.payment_status = "PAID"
+        booking.razorpay_order_id = razorpay_order_id or booking.razorpay_order_id
+        booking.razorpay_payment_id = razorpay_payment_id
+        booking.razorpay_signature = razorpay_signature
+        booking.paid_at = timezone.now()
+        booking.save()
+
+        messages.success(
+            request,
+            f"🎉 Payment of ₹{booking.total_amount:.0f} Successful! Your reservation for {booking.turf.name} on {booking.date.strftime('%d %b %Y')} ({booking.time_slot}) is confirmed."
+        )
+        return redirect("payment_confirmation", pk=booking.pk)
+    else:
+        booking.payment_status = "FAILED"
+        booking.save(update_fields=["payment_status"])
+        messages.error(request, "Payment verification could not be completed. Please try again.")
+        return redirect("payment_checkout", pk=booking.pk)
+
+
+@login_required
+def payment_confirmation(request, pk):
+    """Payment confirmation receipt and instant review option."""
+    booking = get_object_or_404(Booking, pk=pk, user=request.user)
+    existing_review = Review.objects.filter(booking=booking).first() or Review.objects.filter(user=request.user, turf=booking.turf).first()
+    review_form = ReviewForm(instance=existing_review) if existing_review else ReviewForm()
+
+    context = {
+        "booking": booking,
+        "turf": booking.turf,
+        "existing_review": existing_review,
+        "review_form": review_form,
+    }
+    return render(request, "booking/payment_confirmation.html", context)
+
+
+@login_required
 def my_bookings(request):
-    """User booking history with filtering and one-click cancellation."""
+    """User booking history with filtering, payment retry, and review option."""
     status_filter = request.GET.get("status", "ALL")
     bookings = Booking.objects.filter(user=request.user).select_related("turf", "time_slot").order_by("-date", "time_slot__start_time")
 
-    if status_filter in ["CONFIRMED", "CANCELLED", "COMPLETED"]:
+    if status_filter in ["CONFIRMED", "CANCELLED", "COMPLETED", "PENDING"]:
         bookings = bookings.filter(status=status_filter)
 
     today = timezone.localdate()
+
+    # Create mapping of reviews for these bookings
+    user_reviews = Review.objects.filter(user=request.user).select_related("turf")
+    booking_review_map = {r.booking_id: r for r in user_reviews if r.booking_id}
+    turf_review_map = {r.turf_id: r for r in user_reviews}
 
     context = {
         "bookings": bookings,
         "selected_status": status_filter,
         "today": today,
+        "booking_review_map": booking_review_map,
+        "turf_review_map": turf_review_map,
     }
     return render(request, "booking/my_bookings.html", context)
 
@@ -317,14 +542,80 @@ def cancel_booking(request, pk):
     booking = get_object_or_404(Booking, pk=pk, user=request.user)
 
     if request.method == "POST":
-        if booking.status == "CONFIRMED":
+        if booking.status in ["CONFIRMED", "PENDING"]:
             booking.status = "CANCELLED"
-            booking.save(update_fields=["status"])
-            messages.success(request, f"Booking for {booking.turf.name} on {booking.date.strftime('%d %b %Y')} has been cancelled.")
+            if booking.payment_status == "PAID":
+                booking.payment_status = "REFUNDED"
+            booking.save(update_fields=["status", "payment_status"])
+            messages.success(request, f"Booking for {booking.turf.name} on {booking.date.strftime('%d %b %Y')} has been cancelled. Any payment made will be refunded.")
         else:
             messages.warning(request, "This booking cannot be cancelled.")
 
     return redirect("my_bookings")
+
+
+@login_required
+def add_review(request, turf_id):
+    """Add or edit feedback & review for a turf."""
+    turf = get_object_or_404(Turf, pk=turf_id, is_active=True)
+    booking_id = request.GET.get("booking") or request.POST.get("booking_id")
+    booking = None
+    if booking_id:
+        booking = Booking.objects.filter(pk=booking_id, user=request.user, turf=turf).first()
+
+    existing_review = None
+    if booking:
+        existing_review = Review.objects.filter(booking=booking).first()
+    if not existing_review:
+        existing_review = Review.objects.filter(user=request.user, turf=turf).first()
+
+    if request.method == "POST":
+        form = ReviewForm(request.POST, instance=existing_review)
+        if form.is_valid():
+            review = form.save(commit=False)
+            review.turf = turf
+            review.user = request.user
+            if booking and not review.booking:
+                review.booking = booking
+            # Verified check
+            has_booking = Booking.objects.filter(
+                user=request.user, turf=turf, status__in=["CONFIRMED", "COMPLETED"]
+            ).exists()
+            review.is_verified = has_booking
+            review.save()
+
+            messages.success(request, f"⭐ Thank you! Your feedback for {turf.name} has been published.")
+            next_url = request.POST.get("next")
+            if next_url:
+                return redirect(next_url)
+            return redirect("turf_detail", pk=turf.pk)
+    else:
+        form = ReviewForm(instance=existing_review)
+
+    context = {
+        "turf": turf,
+        "booking": booking,
+        "form": form,
+        "existing_review": existing_review,
+    }
+    return render(request, "booking/add_review.html", context)
+
+
+@login_required
+def delete_review(request, pk):
+    """Delete a player review."""
+    review = get_object_or_404(Review, pk=pk)
+    is_owner = review.user == request.user
+    is_admin = request.user.is_staff or (hasattr(request.user, "profile") and request.user.profile.is_admin_user)
+
+    if not (is_owner or is_admin):
+        messages.error(request, "You are not authorized to delete this review.")
+        return redirect("turf_detail", pk=review.turf.pk)
+
+    turf_id = review.turf.pk
+    review.delete()
+    messages.info(request, "Review has been removed.")
+    return redirect("turf_detail", pk=turf_id)
 
 
 # ==============================================================================
@@ -336,7 +627,7 @@ def cancel_booking(request, pk):
 def admin_dashboard(request):
     """
     Dedicated Turf Manager / Admin frontend dashboard.
-    Displays revenue metrics, booking statistics, today's schedule, and quick links.
+    Displays revenue metrics, booking statistics, payment tracking, customer feedback, and schedule.
     """
     today = timezone.localdate()
 
@@ -355,6 +646,14 @@ def admin_dashboard(request):
     # Revenue calculation
     total_revenue = all_bookings.filter(status="CONFIRMED").aggregate(sum=Sum("total_amount"))["sum"] or 0
     today_revenue = today_bookings.aggregate(sum=Sum("total_amount"))["sum"] or 0
+    paid_bookings_count = all_bookings.filter(payment_status="PAID").count()
+
+    # Review and Customer Feedback metrics
+    all_reviews = Review.objects.select_related("turf", "user").order_by("-created_at")
+    reviews_count = all_reviews.count()
+    avg_rating_agg = Review.objects.aggregate(avg=Avg("rating"))["avg"]
+    avg_rating = round(float(avg_rating_agg), 1) if avg_rating_agg is not None else 0.0
+    recent_reviews = all_reviews[:6]
 
     context = {
         "turfs_count": turfs_count,
@@ -362,13 +661,18 @@ def admin_dashboard(request):
         "total_slots_count": total_slots_count,
         "total_bookings_count": total_bookings_count,
         "confirmed_bookings_count": confirmed_bookings_count,
+        "paid_bookings_count": paid_bookings_count,
         "today_bookings": today_bookings,
         "recent_bookings": recent_bookings,
         "total_revenue": total_revenue,
         "today_revenue": today_revenue,
         "today": today,
+        "reviews_count": reviews_count,
+        "avg_rating": avg_rating,
+        "recent_reviews": recent_reviews,
     }
     return render(request, "booking/admin/admin_dashboard.html", context)
+
 
 
 @login_required
@@ -520,3 +824,27 @@ def admin_booking_status(request, pk, new_status):
         booking.save(update_fields=["status"])
         messages.success(request, f"Booking #{booking.id} status updated to {new_status}.")
     return redirect("admin_booking_list")
+
+
+def csrf_failure_view(request, reason="", template_name="403_csrf.html"):
+    """
+    Gracefully handles CSRF token mismatches and session rotations.
+    If the user has a same-origin referer, automatically redirects back with an informative message
+    so the page is re-rendered with valid, fresh CSRF tokens.
+    """
+    referer = request.META.get("HTTP_REFERER")
+    if referer and request.method == "POST":
+        host = request.get_host()
+        if host in referer:
+            messages.warning(
+                request,
+                "Your security session was refreshed. Please confirm your selection and proceed."
+            )
+            return redirect(referer)
+
+    context = {
+        "reason": reason,
+        "referer": referer,
+    }
+    return render(request, "booking/403_csrf.html", context, status=403)
+

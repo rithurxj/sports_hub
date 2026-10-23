@@ -1,0 +1,1186 @@
+{% extends "booking/base.html" %}
+{% load static %}
+
+{% block title %}Live Match Scoreboard | Sports Hub{% endblock %}
+
+{% block extra_head %}
+<style>
+/* Scoreboard Specialized Styles */
+.scoreboard-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 32px 20px 60px;
+}
+
+.scoreboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.scoreboard-tabs {
+  display: flex;
+  gap: 8px;
+  background: var(--bg-subtle);
+  padding: 4px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  flex-wrap: wrap;
+}
+
+.sport-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-heading);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.sport-btn.active {
+  background: var(--bg-surface);
+  color: var(--accent-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.sport-btn:hover:not(.active) {
+  color: var(--text-primary);
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.match-link-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  padding: 10px 16px;
+  border-radius: var(--radius-md);
+  margin-bottom: 24px;
+  box-shadow: var(--shadow-sm);
+  flex-wrap: wrap;
+}
+
+.digital-board {
+  background: #0f1e14;
+  color: #f5f9f4;
+  border-radius: var(--radius-lg);
+  padding: 32px 24px;
+  border: 1.5px solid #233e2b;
+  box-shadow: var(--shadow-lg), inset 0 0 40px rgba(0, 0, 0, 0.4);
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+
+.digital-board::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #276749, #427d53, #276749);
+}
+
+.board-top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.board-title {
+  font-family: var(--font-heading);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(225, 29, 72, 0.18);
+  border: 1px solid rgba(225, 29, 72, 0.4);
+  color: #fb7185;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.live-badge .pulse {
+  width: 6px;
+  height: 6px;
+  background: #f43f5e;
+  border-radius: 50%;
+  animation: pulseDot 1.5s infinite;
+}
+
+/* Keypad Grid */
+.score-keypad {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.key-btn {
+  padding: 14px 10px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-heading);
+  font-size: 17px;
+  font-weight: 700;
+  color: #ffffff;
+  background: #192e20;
+  border: 1px solid #2d4f36;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: center;
+  user-select: none;
+}
+
+.key-btn:hover {
+  background: #25422e;
+  transform: translateY(-2px);
+  border-color: #427d53;
+}
+
+.key-btn:active {
+  transform: scale(0.96);
+}
+
+.key-btn.boundary-four {
+  background: #1b4d30;
+  border-color: #3b8a53;
+  color: #79e099;
+}
+
+.key-btn.boundary-six {
+  background: #4a3410;
+  border-color: #8c631e;
+  color: #f7d070;
+}
+
+.key-btn.wicket {
+  background: #4a1919;
+  border-color: #8a3333;
+  color: #ffa8a8;
+}
+
+.key-btn.undo {
+  background: #1f2720;
+  border-color: #384539;
+  color: #9ba397;
+  font-size: 14px;
+}
+
+/* Over Timeline */
+.timeline-pills {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-top: 14px;
+}
+
+.ball-chip {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  background: #192e20;
+  border: 1px solid #2d4f36;
+  color: #fff;
+}
+
+.ball-chip.four { background: #1b4d30; color: #79e099; border-color: #3b8a53; }
+.ball-chip.six { background: #4a3410; color: #f7d070; border-color: #8c631e; }
+.ball-chip.wicket { background: #4a1919; color: #ffa8a8; border-color: #8a3333; }
+.ball-chip.extra { background: #28374d; color: #9bc2f7; border-color: #41628f; }
+
+/* Big Score Typography */
+.giant-score {
+  font-family: var(--font-heading);
+  font-size: clamp(48px, 9vw, 84px);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -2px;
+  color: #ffffff;
+}
+
+.giant-overs {
+  font-size: clamp(20px, 3.5vw, 32px);
+  color: #9ba397;
+  font-weight: 600;
+}
+
+/* Football Timer */
+.football-timer-display {
+  font-family: monospace;
+  font-size: clamp(38px, 6vw, 64px);
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: #79e099;
+}
+
+/* Tennis Point Badges */
+.point-badge {
+  font-size: clamp(36px, 6vw, 56px);
+  font-weight: 800;
+  font-family: var(--font-heading);
+  min-width: 80px;
+  text-align: center;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.tennis-server-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #f7d070;
+  box-shadow: 0 0 10px #f7d070;
+  display: inline-block;
+  margin-left: 6px;
+}
+
+@media (max-width: 640px) {
+  .digital-board {
+    padding: 20px 16px;
+  }
+  .score-keypad {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="scoreboard-container">
+    <!-- Top Bar -->
+    <div class="scoreboard-header">
+        <div>
+            <span class="section-eyebrow">MATCH CONTROLS</span>
+            <h1 class="section-title" style="margin-top: 2px;">Multi-Sport Match Scoreboard</h1>
+            <p class="section-subtitle">Real-time point, goal, and run tracking for your turf sessions.</p>
+        </div>
+
+        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+            <button id="btn-fullscreen" class="btn btn-outline btn-sm" onclick="toggleFullscreen()" title="Toggle Fullscreen Arena Mode">
+                <span>⛶</span> Fullscreen
+            </button>
+            <button class="btn btn-outline btn-sm" onclick="resetCurrentSport()" title="Reset Scoreboard">
+                <span>🔄</span> Reset Game
+            </button>
+        </div>
+    </div>
+
+    <!-- Match Linked Reservation Banner -->
+    <div class="match-link-bar">
+        <span style="font-size: 18px;">🏟️</span>
+        <div style="flex: 1; min-width: 200px;">
+            <label for="reservation-selector" style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); display: block; margin-bottom: 2px;">
+                Link to Turf Reservation
+            </label>
+            <select id="reservation-selector" class="form-control" style="padding: 6px 10px; font-size: 13.5px; height: 36px; border-radius: var(--radius-sm);" onchange="onReservationChange()">
+                <option value="">Casual / Unlinked Match</option>
+                {% for b in user_bookings %}
+                    <option value="{{ b.id }}" data-sport="{{ b.turf.sport_type }}">
+                        {{ b.turf.name }} &bull; {{ b.date|date:"d M Y" }} ({{ b.time_slot.start_time|time:"H:i" }} - {{ b.time_slot.end_time|time:"H:i" }}) - {{ b.turf.get_sport_type_display }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div id="booking-badge-target" style="display: none; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: var(--accent-primary); background: var(--bg-subtle); padding: 6px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+            <span>✓ Verified Match Session</span>
+        </div>
+    </div>
+
+    <!-- Sport Tabs -->
+    <div class="scoreboard-tabs" role="tablist">
+        <button class="sport-btn active" id="tab-CRICKET" onclick="switchSport('CRICKET')">
+            <span>🏏</span> Box Cricket
+        </button>
+        <button class="sport-btn" id="tab-FOOTBALL" onclick="switchSport('FOOTBALL')">
+            <span>⚽</span> Football / Futsal
+        </button>
+        <button class="sport-btn" id="tab-TENNIS" onclick="switchSport('TENNIS')">
+            <span>🎾</span> Tennis Court
+        </button>
+        <button class="sport-btn" id="tab-BADMINTON" onclick="switchSport('BADMINTON')">
+            <span>🏸</span> Badminton Court
+        </button>
+    </div>
+
+    <!-- =========================================================================
+         1. CRICKET SCOREBOARD PANEL
+         ========================================================================= -->
+    <div id="panel-CRICKET" class="sport-panel" style="margin-top: 18px;">
+        <div class="digital-board">
+            <div class="board-top-bar">
+                <div class="board-title">
+                    <span>🏏 Turf Box Cricket</span>
+                    <span class="live-badge"><span class="pulse"></span> LIVE</span>
+                </div>
+                <div style="display: flex; gap: 12px; align-items: center; font-size: 13px;">
+                    <div>
+                        <label style="color: #9ba397; font-size: 11px; margin-right: 4px;">Max Overs:</label>
+                        <select id="cricket-max-overs" style="background: #192e20; color: #fff; border: 1px solid #2d4f36; border-radius: 4px; padding: 2px 6px;" onchange="updateCricketState()">
+                            <option value="6">6 Overs</option>
+                            <option value="8" selected>8 Overs</option>
+                            <option value="10">10 Overs</option>
+                            <option value="12">12 Overs</option>
+                            <option value="20">20 Overs</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="color: #9ba397; font-size: 11px; margin-right: 4px;">Innings:</label>
+                        <select id="cricket-innings" style="background: #192e20; color: #fff; border: 1px solid #2d4f36; border-radius: 4px; padding: 2px 6px;" onchange="onCricketInningsChange()">
+                            <option value="1">1st Innings</option>
+                            <option value="2">2nd Innings (Chase)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Team & Innings Info -->
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+                <div>
+                    <input type="text" id="cricket-team-batting" value="Team Alpha" style="background: transparent; border: none; border-bottom: 1px dashed rgba(255,255,255,0.3); color: #ffffff; font-family: var(--font-heading); font-size: 22px; font-weight: 700; width: 220px;" placeholder="Batting Team">
+                    <div style="color: #9ba397; font-size: 12.5px; margin-top: 3px;">Batting &bull; Projected: <span id="cricket-projected-score" style="color: #79e099; font-weight: 600;">--</span></div>
+                </div>
+                <div id="cricket-chase-box" style="display: none; text-align: right; background: rgba(0,0,0,0.25); padding: 8px 14px; border-radius: var(--radius-sm); border: 1px solid rgba(255,255,255,0.1);">
+                    <div style="font-size: 12px; color: #9ba397;">Target: <strong id="cricket-target-disp" style="color: #fff; font-size: 14px;">--</strong></div>
+                    <div style="font-size: 12.5px; color: #f7d070; font-weight: 600;">Need <span id="cricket-needed-runs">--</span> from <span id="cricket-needed-balls">--</span> balls</div>
+                </div>
+            </div>
+
+            <!-- Main Score Big Board -->
+            <div style="display: flex; align-items: baseline; gap: 20px; flex-wrap: wrap; margin-bottom: 20px;">
+                <div class="giant-score">
+                    <span id="cricket-runs">0</span><span style="color: #427d53;">/</span><span id="cricket-wickets" style="color: #ffa8a8;">0</span>
+                </div>
+                <div class="giant-overs">
+                    Overs: <span id="cricket-overs" style="color: #ffffff; font-weight: 700;">0.0</span> <span style="font-size: 16px; color: #778174;">/ <span id="cricket-max-overs-disp">8</span>.0</span>
+                </div>
+                <div style="margin-left: auto; text-align: right;">
+                    <div style="font-size: 13px; color: #9ba397;">CRR: <span id="cricket-crr" style="color: #ffffff; font-weight: 700;">0.00</span></div>
+                    <div style="font-size: 13px; color: #9ba397; margin-top: 2px;">Extras: <span id="cricket-extras" style="color: #9bc2f7; font-weight: 700;">0</span> (Wd: <span id="cricket-wides">0</span>, Nb: <span id="cricket-noballs">0</span>)</div>
+                </div>
+            </div>
+
+            <!-- Current Batsmen On Strike -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; background: rgba(0,0,0,0.3); padding: 14px 18px; border-radius: var(--radius-sm); border: 1px solid rgba(255,255,255,0.08); margin-bottom: 20px;">
+                <div id="striker-1-wrap" style="display: flex; justify-content: space-between; align-items: center; cursor: pointer;" onclick="toggleCricketStrike()">
+                    <div>
+                        <div style="font-size: 14px; font-weight: 700; color: #fff;">
+                            <span id="striker-dot-1" style="color: #79e099; margin-right: 4px;">*</span> Batsman 1
+                        </div>
+                        <div style="font-size: 12px; color: #9ba397;">On Strike (Click to switch)</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <span id="b1-runs" style="font-size: 16px; font-weight: 700; color: #fff;">0</span>
+                        <span style="font-size: 12px; color: #9ba397;">(<span id="b1-balls">0</span>)</span>
+                    </div>
+                </div>
+
+                <div id="striker-2-wrap" style="display: flex; justify-content: space-between; align-items: center; cursor: pointer;" onclick="toggleCricketStrike()">
+                    <div>
+                        <div style="font-size: 14px; font-weight: 700; color: #fff;">
+                            <span id="striker-dot-2" style="color: transparent; margin-right: 4px;">*</span> Batsman 2
+                        </div>
+                        <div style="font-size: 12px; color: #9ba397;">Non-Striker</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <span id="b2-runs" style="font-size: 16px; font-weight: 700; color: #fff;">0</span>
+                        <span style="font-size: 12px; color: #9ba397;">(<span id="b2-balls">0</span>)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- This Over Timeline -->
+            <div>
+                <div style="display: flex; justify-content: space-between; font-size: 12px; color: #9ba397; text-transform: uppercase; font-weight: 600;">
+                    <span>This Over (Over <span id="cricket-current-over-num">1</span>)</span>
+                    <span id="cricket-over-runs">Runs in Over: 0</span>
+                </div>
+                <div class="timeline-pills" id="cricket-over-timeline">
+                    <span style="font-size: 12.5px; color: #566155; font-style: italic;">No balls bowled yet in this over</span>
+                </div>
+            </div>
+
+            <!-- Scoring Keypad Controls -->
+            <div class="score-keypad">
+                <button class="key-btn" onclick="cricketAdd(0)">0</button>
+                <button class="key-btn" onclick="cricketAdd(1)">1</button>
+                <button class="key-btn" onclick="cricketAdd(2)">2</button>
+                <button class="key-btn" onclick="cricketAdd(3)">3</button>
+                <button class="key-btn boundary-four" onclick="cricketAdd(4)">4 (Boundary)</button>
+                <button class="key-btn boundary-six" onclick="cricketAdd(6)">6 (Maximum)</button>
+                <button class="key-btn wicket" onclick="cricketWicket()">OUT (Wicket)</button>
+                <button class="key-btn" style="color: #9bc2f7;" onclick="cricketExtra('WD')">Wide</button>
+                <button class="key-btn" style="color: #9bc2f7;" onclick="cricketExtra('NB')">No Ball</button>
+                <button class="key-btn undo" onclick="cricketUndo()">↩ Undo</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========================================================================
+         2. FOOTBALL SCOREBOARD PANEL
+         ========================================================================= -->
+    <div id="panel-FOOTBALL" class="sport-panel" style="display: none; margin-top: 18px;">
+        <div class="digital-board">
+            <div class="board-top-bar">
+                <div class="board-title">
+                    <span>⚽ Turf Football / Futsal Match</span>
+                    <span class="live-badge"><span class="pulse"></span> LIVE</span>
+                </div>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <select id="football-half-select" style="background: #192e20; color: #fff; border: 1px solid #2d4f36; border-radius: 4px; padding: 4px 8px; font-size: 13px;" onchange="onFootballHalfChange()">
+                        <option value="1">1st Half</option>
+                        <option value="HT">Halftime</option>
+                        <option value="2">2nd Half</option>
+                        <option value="ET">Extra Time</option>
+                        <option value="FT">Full Time</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Match Clock & Stopwatch -->
+            <div style="text-align: center; margin-bottom: 28px;">
+                <div class="football-timer-display" id="football-timer">00:00</div>
+                <div style="display: flex; justify-content: center; gap: 8px; margin-top: 8px;">
+                    <button class="btn btn-primary btn-sm" id="btn-timer-toggle" onclick="toggleFootballTimer()">
+                        ▶ Start Clock
+                    </button>
+                    <button class="btn btn-secondary btn-sm" onclick="resetFootballTimer()">
+                        Reset Time
+                    </button>
+                </div>
+            </div>
+
+            <!-- Teams Goals Grid -->
+            <div style="display: grid; grid-template-columns: 1fr auto 1fr; gap: 20px; align-items: center; margin-bottom: 28px;">
+                <!-- Team A -->
+                <div style="text-align: center; background: rgba(0,0,0,0.25); padding: 20px; border-radius: var(--radius-md); border: 1px solid rgba(255,255,255,0.08);">
+                    <input type="text" id="fb-team-a" value="Arsenal FC" style="text-align: center; background: transparent; border: none; border-bottom: 1px dashed rgba(255,255,255,0.3); color: #fff; font-family: var(--font-heading); font-size: 20px; font-weight: 700; width: 100%;" placeholder="Team A">
+                    <div class="giant-score" id="fb-score-a" style="margin: 12px 0;">0</div>
+                    <div style="display: flex; justify-content: center; gap: 6px; flex-wrap: wrap;">
+                        <button class="btn btn-primary btn-sm" onclick="fbGoal('A')">+ ⚽ Goal</button>
+                        <button class="btn btn-outline btn-sm" style="color: #ffaa99;" onclick="fbCard('A', 'Yellow')">🟨 Card</button>
+                        <button class="btn btn-outline btn-sm" style="color: #ff7777;" onclick="fbCard('A', 'Red')">🟥 Card</button>
+                        <button class="btn btn-outline btn-sm" onclick="fbScoreAdjust('A', -1)">-</button>
+                    </div>
+                </div>
+
+                <div style="font-family: var(--font-heading); font-size: 24px; font-weight: 800; color: #427d53;">
+                    VS
+                </div>
+
+                <!-- Team B -->
+                <div style="text-align: center; background: rgba(0,0,0,0.25); padding: 20px; border-radius: var(--radius-md); border: 1px solid rgba(255,255,255,0.08);">
+                    <input type="text" id="fb-team-b" value="Chelsea FC" style="text-align: center; background: transparent; border: none; border-bottom: 1px dashed rgba(255,255,255,0.3); color: #fff; font-family: var(--font-heading); font-size: 20px; font-weight: 700; width: 100%;" placeholder="Team B">
+                    <div class="giant-score" id="fb-score-b" style="margin: 12px 0;">0</div>
+                    <div style="display: flex; justify-content: center; gap: 6px; flex-wrap: wrap;">
+                        <button class="btn btn-primary btn-sm" onclick="fbGoal('B')">+ ⚽ Goal</button>
+                        <button class="btn btn-outline btn-sm" style="color: #ffaa99;" onclick="fbCard('B', 'Yellow')">🟨 Card</button>
+                        <button class="btn btn-outline btn-sm" style="color: #ff7777;" onclick="fbCard('B', 'Red')">🟥 Card</button>
+                        <button class="btn btn-outline btn-sm" onclick="fbScoreAdjust('B', -1)">-</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Match Events Feed -->
+            <div style="background: rgba(0,0,0,0.3); border-radius: var(--radius-sm); padding: 16px; border: 1px solid rgba(255,255,255,0.08);">
+                <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: #9ba397; margin-bottom: 10px;">
+                    Live Match Event Feed
+                </div>
+                <div id="fb-event-log" style="display: flex; flex-direction: column; gap: 6px; max-height: 160px; overflow-y: auto;">
+                    <div style="font-size: 13px; color: #778174; font-style: italic;">Match kickoff. No events logged yet.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========================================================================
+         3. TENNIS SCOREBOARD PANEL
+         ========================================================================= -->
+    <div id="panel-TENNIS" class="sport-panel" style="display: none; margin-top: 18px;">
+        <div class="digital-board">
+            <div class="board-top-bar">
+                <div class="board-title">
+                    <span>🎾 Tennis Court Scoreboard</span>
+                    <span class="live-badge"><span class="pulse"></span> LIVE</span>
+                </div>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <button class="btn btn-outline btn-sm" onclick="toggleTennisServer()">
+                        Switch Server 🎾
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tennis Match Table -->
+            <div style="background: rgba(0,0,0,0.3); border-radius: var(--radius-md); overflow: hidden; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 24px;">
+                <table style="width: 100%; border-collapse: collapse; text-align: center;">
+                    <thead>
+                        <tr style="background: rgba(0,0,0,0.4); color: #9ba397; font-size: 12px; text-transform: uppercase;">
+                            <th style="padding: 12px 16px; text-align: left;">Player</th>
+                            <th style="width: 60px;">Set 1</th>
+                            <th style="width: 60px;">Set 2</th>
+                            <th style="width: 60px;">Set 3</th>
+                            <th style="width: 100px;">Points</th>
+                            <th style="width: 120px;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.08);">
+                            <td style="padding: 16px; text-align: left; font-size: 18px; font-weight: 700; color: #fff;">
+                                <input type="text" id="tennis-p1-name" value="Player 1" style="background: transparent; border: none; color: #fff; font-size: 17px; font-weight: 700; width: 140px;">
+                                <span id="tennis-p1-server" class="tennis-server-dot"></span>
+                            </td>
+                            <td style="font-size: 18px; font-weight: 700;" id="tennis-p1-s1">0</td>
+                            <td style="font-size: 18px; font-weight: 700;" id="tennis-p1-s2">0</td>
+                            <td style="font-size: 18px; font-weight: 700;" id="tennis-p1-s3">0</td>
+                            <td>
+                                <div class="point-badge" id="tennis-p1-points" style="color: #79e099;">0</div>
+                            </td>
+                            <td>
+                                <button class="btn btn-primary btn-sm" onclick="tennisPoint(1)">+ Point</button>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td style="padding: 16px; text-align: left; font-size: 18px; font-weight: 700; color: #fff;">
+                                <input type="text" id="tennis-p2-name" value="Player 2" style="background: transparent; border: none; color: #fff; font-size: 17px; font-weight: 700; width: 140px;">
+                                <span id="tennis-p2-server" class="tennis-server-dot" style="display: none;"></span>
+                            </td>
+                            <td style="font-size: 18px; font-weight: 700;" id="tennis-p2-s1">0</td>
+                            <td style="font-size: 18px; font-weight: 700;" id="tennis-p2-s2">0</td>
+                            <td style="font-size: 18px; font-weight: 700;" id="tennis-p2-s3">0</td>
+                            <td>
+                                <div class="point-badge" id="tennis-p2-points" style="color: #79e099;">0</div>
+                            </td>
+                            <td>
+                                <button class="btn btn-primary btn-sm" onclick="tennisPoint(2)">+ Point</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Tennis Guide / Status -->
+            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: #9ba397;">
+                <div>Standard progression: 0 &rarr; 15 &rarr; 30 &rarr; 40 &rarr; Deuce &rarr; Advantage &rarr; Game</div>
+                <button class="btn btn-outline btn-sm" onclick="tennisUndo()">↩ Undo Point</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========================================================================
+         4. BADMINTON SCOREBOARD PANEL
+         ========================================================================= -->
+    <div id="panel-BADMINTON" class="sport-panel" style="display: none; margin-top: 18px;">
+        <div class="digital-board">
+            <div class="board-top-bar">
+                <div class="board-title">
+                    <span>🏸 Badminton 21-Point Arena</span>
+                    <span class="live-badge"><span class="pulse"></span> LIVE</span>
+                </div>
+                <div style="display: flex; gap: 8px; font-size: 13px; color: #9ba397;">
+                    <span>Official BWF 21-Point Rally Format (Best of 3)</span>
+                </div>
+            </div>
+
+            <!-- Game Sets Indicator -->
+            <div style="display: flex; justify-content: center; gap: 16px; margin-bottom: 24px;">
+                <div style="background: rgba(0,0,0,0.3); padding: 8px 16px; border-radius: var(--radius-sm); border: 1px solid rgba(255,255,255,0.1); font-size: 14px;">
+                    Game 1: <strong id="bm-set1-score" style="color: #fff;">0 - 0</strong>
+                </div>
+                <div style="background: rgba(0,0,0,0.3); padding: 8px 16px; border-radius: var(--radius-sm); border: 1px solid rgba(255,255,255,0.1); font-size: 14px;">
+                    Game 2: <strong id="bm-set2-score" style="color: #fff;">0 - 0</strong>
+                </div>
+                <div style="background: rgba(0,0,0,0.3); padding: 8px 16px; border-radius: var(--radius-sm); border: 1px solid rgba(255,255,255,0.1); font-size: 14px;">
+                    Game 3 (Decider): <strong id="bm-set3-score" style="color: #fff;">0 - 0</strong>
+                </div>
+            </div>
+
+            <!-- Badminton Rally Counter -->
+            <div style="display: grid; grid-template-columns: 1fr auto 1fr; gap: 24px; align-items: center; margin-bottom: 24px;">
+                <div style="text-align: center; background: rgba(0,0,0,0.25); padding: 24px; border-radius: var(--radius-md); border: 1px solid rgba(255,255,255,0.08);">
+                    <input type="text" id="bm-p1-name" value="Player / Side 1" style="text-align: center; background: transparent; border: none; border-bottom: 1px dashed rgba(255,255,255,0.3); color: #fff; font-family: var(--font-heading); font-size: 18px; font-weight: 700; width: 100%;">
+                    <div class="giant-score" id="bm-p1-points" style="margin: 14px 0; color: #79e099;">0</div>
+                    <div style="display: flex; justify-content: center; gap: 8px;">
+                        <button class="btn btn-primary" style="font-size: 16px; padding: 10px 24px;" onclick="bmPoint(1)">+ Point</button>
+                        <button class="btn btn-outline btn-sm" onclick="bmPointAdjust(1, -1)">-</button>
+                    </div>
+                    <div id="bm-p1-service" style="font-size: 12px; color: #f7d070; margin-top: 8px; font-weight: 600;">Service Side: Right Court</div>
+                </div>
+
+                <div style="font-family: var(--font-heading); font-size: 24px; font-weight: 800; color: #427d53;">
+                    VS
+                </div>
+
+                <div style="text-align: center; background: rgba(0,0,0,0.25); padding: 24px; border-radius: var(--radius-md); border: 1px solid rgba(255,255,255,0.08);">
+                    <input type="text" id="bm-p2-name" value="Player / Side 2" style="text-align: center; background: transparent; border: none; border-bottom: 1px dashed rgba(255,255,255,0.3); color: #fff; font-family: var(--font-heading); font-size: 18px; font-weight: 700; width: 100%;">
+                    <div class="giant-score" id="bm-p2-points" style="margin: 14px 0; color: #79e099;">0</div>
+                    <div style="display: flex; justify-content: center; gap: 8px;">
+                        <button class="btn btn-primary" style="font-size: 16px; padding: 10px 24px;" onclick="bmPoint(2)">+ Point</button>
+                        <button class="btn btn-outline btn-sm" onclick="bmPointAdjust(2, -1)">-</button>
+                    </div>
+                    <div id="bm-p2-service" style="font-size: 12px; color: #f7d070; margin-top: 8px; font-weight: 600; opacity: 0;">Service Side: Left Court</div>
+                </div>
+            </div>
+
+            <!-- Match Point / Game Alert Banner -->
+            <div id="bm-alert-banner" style="display: none; background: rgba(247, 208, 112, 0.15); border: 1px solid #f7d070; color: #f7d070; padding: 10px; border-radius: var(--radius-sm); text-align: center; font-weight: 700;">
+                GAME POINT!
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+/* ==========================================================================
+   MULTI-SPORT LIVE SCOREBOARD LOGIC
+   ========================================================================== */
+
+let currentSport = '{{ selected_sport|default:"CRICKET" }}';
+
+// --------------------------------------------------------------------------
+// 1. SPORT SWITCHER & INITIALIZATION
+// --------------------------------------------------------------------------
+function switchSport(sport) {
+  currentSport = sport;
+  document.querySelectorAll('.sport-btn').forEach(btn => btn.classList.remove('active'));
+  const activeBtn = document.getElementById('tab-' + sport);
+  if (activeBtn) activeBtn.classList.add('active');
+
+  document.querySelectorAll('.sport-panel').forEach(panel => panel.style.display = 'none');
+  const activePanel = document.getElementById('panel-' + sport);
+  if (activePanel) activePanel.style.display = 'block';
+
+  // Update URL without reload
+  const url = new URL(window.location);
+  url.searchParams.set('sport', sport);
+  window.history.replaceState({}, '', url);
+}
+
+function onReservationChange() {
+  const sel = document.getElementById('reservation-selector');
+  const opt = sel.options[sel.selectedIndex];
+  const badge = document.getElementById('booking-badge-target');
+
+  if (sel.value) {
+    badge.style.display = 'inline-flex';
+    const sport = opt.getAttribute('data-sport');
+    if (sport && ['CRICKET', 'FOOTBALL', 'TENNIS', 'BADMINTON'].includes(sport)) {
+      switchSport(sport);
+    }
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+function toggleFullscreen() {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch(() => {});
+  } else {
+    if (document.exitFullscreen) document.exitFullscreen();
+  }
+}
+
+function resetCurrentSport() {
+  if (confirm("Reset current match scores?")) {
+    if (currentSport === 'CRICKET') resetCricket();
+    else if (currentSport === 'FOOTBALL') resetFootball();
+    else if (currentSport === 'TENNIS') resetTennis();
+    else if (currentSport === 'BADMINTON') resetBadminton();
+  }
+}
+
+// --------------------------------------------------------------------------
+// 2. CRICKET ENGINE
+// --------------------------------------------------------------------------
+let cricketState = {
+  runs: 0,
+  wickets: 0,
+  balls: 0,
+  wides: 0,
+  noballs: 0,
+  innings: 1,
+  target: 0,
+  striker: 1, // 1 or 2
+  b1Runs: 0, b1Balls: 0,
+  b2Runs: 0, b2Balls: 0,
+  history: [], // stack for undo
+  overTimeline: []
+};
+
+function cricketAdd(run) {
+  saveCricketHistory();
+  cricketState.runs += run;
+  cricketState.balls += 1;
+
+  if (cricketState.striker === 1) {
+    cricketState.b1Runs += run;
+    cricketState.b1Balls += 1;
+  } else {
+    cricketState.b2Runs += run;
+    cricketState.b2Balls += 1;
+  }
+
+  let chipClass = '';
+  if (run === 4) chipClass = 'four';
+  else if (run === 6) chipClass = 'six';
+  cricketState.overTimeline.push({ text: run.toString(), class: chipClass });
+
+  // Rotate strike on odd runs (1, 3)
+  if (run % 2 === 1) toggleCricketStrike();
+
+  // Check over completion (every 6 legal balls)
+  if (cricketState.balls % 6 === 0) {
+    toggleCricketStrike(); // Rotate strike at end of over
+    cricketState.overTimeline = []; // Reset this over timeline
+  }
+
+  updateCricketUI();
+}
+
+function cricketWicket() {
+  if (cricketState.wickets >= 10) return;
+  saveCricketHistory();
+  cricketState.wickets += 1;
+  cricketState.balls += 1;
+
+  if (cricketState.striker === 1) {
+    cricketState.b1Balls += 1;
+    cricketState.b1Runs = 0; cricketState.b1Balls = 0; // New batsman
+  } else {
+    cricketState.b2Balls += 1;
+    cricketState.b2Runs = 0; cricketState.b2Balls = 0; // New batsman
+  }
+
+  cricketState.overTimeline.push({ text: 'W', class: 'wicket' });
+
+  if (cricketState.balls % 6 === 0) {
+    toggleCricketStrike();
+    cricketState.overTimeline = [];
+  }
+  updateCricketUI();
+}
+
+function cricketExtra(type) {
+  saveCricketHistory();
+  cricketState.runs += 1;
+  if (type === 'WD') {
+    cricketState.wides += 1;
+    cricketState.overTimeline.push({ text: 'Wd', class: 'extra' });
+  } else if (type === 'NB') {
+    cricketState.noballs += 1;
+    cricketState.overTimeline.push({ text: 'Nb', class: 'extra' });
+  }
+  updateCricketUI();
+}
+
+function toggleCricketStrike() {
+  cricketState.striker = cricketState.striker === 1 ? 2 : 1;
+  updateCricketUI();
+}
+
+function cricketUndo() {
+  if (cricketState.history.length > 0) {
+    cricketState = cricketState.history.pop();
+    updateCricketUI();
+  }
+}
+
+function saveCricketHistory() {
+  const snapshot = JSON.parse(JSON.stringify(cricketState));
+  delete snapshot.history;
+  cricketState.history.push(snapshot);
+  if (cricketState.history.length > 20) cricketState.history.shift();
+}
+
+function resetCricket() {
+  cricketState = {
+    runs: 0, wickets: 0, balls: 0, wides: 0, noballs: 0,
+    innings: 1, target: 0, striker: 1,
+    b1Runs: 0, b1Balls: 0, b2Runs: 0, b2Balls: 0,
+    history: [], overTimeline: []
+  };
+  updateCricketUI();
+}
+
+function onCricketInningsChange() {
+  const inn = parseInt(document.getElementById('cricket-innings').value);
+  cricketState.innings = inn;
+  if (inn === 2) {
+    const t = prompt("Enter target runs for chase:", (cricketState.runs + 1).toString());
+    cricketState.target = parseInt(t) || (cricketState.runs + 1);
+    document.getElementById('cricket-chase-box').style.display = 'block';
+  } else {
+    document.getElementById('cricket-chase-box').style.display = 'none';
+  }
+  updateCricketUI();
+}
+
+function updateCricketUI() {
+  const maxOvers = parseInt(document.getElementById('cricket-max-overs').value);
+  document.getElementById('cricket-max-overs-disp').innerText = maxOvers;
+  document.getElementById('cricket-runs').innerText = cricketState.runs;
+  document.getElementById('cricket-wickets').innerText = cricketState.wickets;
+
+  const completedOvers = Math.floor(cricketState.balls / 6);
+  const remainingBalls = cricketState.balls % 6;
+  document.getElementById('cricket-overs').innerText = `${completedOvers}.${remainingBalls}`;
+  document.getElementById('cricket-current-over-num').innerText = completedOvers + 1;
+
+  // Run Rates
+  const totalOversDecimal = cricketState.balls > 0 ? (cricketState.balls / 6) : 0;
+  const crr = totalOversDecimal > 0 ? (cricketState.runs / totalOversDecimal).toFixed(2) : "0.00";
+  document.getElementById('cricket-crr').innerText = crr;
+  document.getElementById('cricket-projected-score').innerText = Math.round(crr * maxOvers);
+
+  // Extras
+  document.getElementById('cricket-extras').innerText = cricketState.wides + cricketState.noballs;
+  document.getElementById('cricket-wides').innerText = cricketState.wides;
+  document.getElementById('cricket-noballs').innerText = cricketState.noballs;
+
+  // Batsmen
+  document.getElementById('b1-runs').innerText = cricketState.b1Runs;
+  document.getElementById('b1-balls').innerText = cricketState.b1Balls;
+  document.getElementById('b2-runs').innerText = cricketState.b2Runs;
+  document.getElementById('b2-balls').innerText = cricketState.b2Balls;
+
+  document.getElementById('striker-dot-1').style.color = cricketState.striker === 1 ? '#79e099' : 'transparent';
+  document.getElementById('striker-dot-2').style.color = cricketState.striker === 2 ? '#79e099' : 'transparent';
+
+  // Chase target calculations
+  if (cricketState.innings === 2) {
+    document.getElementById('cricket-target-disp').innerText = cricketState.target;
+    const neededRuns = Math.max(0, cricketState.target - cricketState.runs);
+    const totalMaxBalls = maxOvers * 6;
+    const remainingMatchBalls = Math.max(0, totalMaxBalls - cricketState.balls);
+    document.getElementById('cricket-needed-runs').innerText = neededRuns;
+    document.getElementById('cricket-needed-balls').innerText = remainingMatchBalls;
+  }
+
+  // Render This Over Timeline
+  const timeline = document.getElementById('cricket-over-timeline');
+  if (cricketState.overTimeline.length === 0) {
+    timeline.innerHTML = '<span style="font-size: 12.5px; color: #566155; font-style: italic;">No balls bowled yet in this over</span>';
+  } else {
+    timeline.innerHTML = cricketState.overTimeline.map(b => `<div class="ball-chip ${b.class}">${b.text}</div>`).join('');
+  }
+}
+
+// --------------------------------------------------------------------------
+// 3. FOOTBALL ENGINE
+// --------------------------------------------------------------------------
+let fbScoreA = 0;
+let fbScoreB = 0;
+let fbSeconds = 0;
+let fbTimerInterval = null;
+
+function toggleFootballTimer() {
+  const btn = document.getElementById('btn-timer-toggle');
+  if (fbTimerInterval) {
+    clearInterval(fbTimerInterval);
+    fbTimerInterval = null;
+    btn.innerHTML = '▶ Start Clock';
+    btn.classList.replace('btn-secondary', 'btn-primary');
+  } else {
+    fbTimerInterval = setInterval(() => {
+      fbSeconds++;
+      updateFootballTimerDisplay();
+    }, 1000);
+    btn.innerHTML = '⏸ Pause Clock';
+    btn.classList.replace('btn-primary', 'btn-secondary');
+  }
+}
+
+function resetFootballTimer() {
+  if (fbTimerInterval) clearInterval(fbTimerInterval);
+  fbTimerInterval = null;
+  fbSeconds = 0;
+  document.getElementById('btn-timer-toggle').innerHTML = '▶ Start Clock';
+  updateFootballTimerDisplay();
+}
+
+function updateFootballTimerDisplay() {
+  const mins = Math.floor(fbSeconds / 60).toString().padStart(2, '0');
+  const secs = (fbSeconds % 60).toString().padStart(2, '0');
+  document.getElementById('football-timer').innerText = `${mins}:${secs}`;
+}
+
+function fbGoal(team) {
+  const teamName = team === 'A' ? document.getElementById('fb-team-a').value : document.getElementById('fb-team-b').value;
+  if (team === 'A') fbScoreA++; else fbScoreB++;
+  document.getElementById('fb-score-a').innerText = fbScoreA;
+  document.getElementById('fb-score-b').innerText = fbScoreB;
+
+  const mins = Math.floor(fbSeconds / 60);
+  logFootballEvent(`⚽ <strong>${mins}' Goal!</strong> &bull; ${teamName}`);
+}
+
+function fbCard(team, cardType) {
+  const teamName = team === 'A' ? document.getElementById('fb-team-a').value : document.getElementById('fb-team-b').value;
+  const mins = Math.floor(fbSeconds / 60);
+  const icon = cardType === 'Yellow' ? '🟨' : '🟥';
+  logFootballEvent(`${icon} <strong>${mins}' ${cardType} Card</strong> &bull; ${teamName}`);
+}
+
+function fbScoreAdjust(team, delta) {
+  if (team === 'A') {
+    fbScoreA = Math.max(0, fbScoreA + delta);
+    document.getElementById('fb-score-a').innerText = fbScoreA;
+  } else {
+    fbScoreB = Math.max(0, fbScoreB + delta);
+    document.getElementById('fb-score-b').innerText = fbScoreB;
+  }
+}
+
+function logFootballEvent(html) {
+  const log = document.getElementById('fb-event-log');
+  const entry = document.createElement('div');
+  entry.style.fontSize = '13.5px';
+  entry.style.color = '#e2ebd8';
+  entry.innerHTML = html;
+  log.prepend(entry);
+}
+
+function onFootballHalfChange() {
+  const half = document.getElementById('football-half-select').value;
+  logFootballEvent(`⏱ <strong>Match Status:</strong> ${half}`);
+}
+
+function resetFootball() {
+  fbScoreA = 0; fbScoreB = 0;
+  document.getElementById('fb-score-a').innerText = 0;
+  document.getElementById('fb-score-b').innerText = 0;
+  resetFootballTimer();
+  document.getElementById('fb-event-log').innerHTML = '<div style="font-size: 13px; color: #778174; font-style: italic;">Match kickoff. No events logged yet.</div>';
+}
+
+// --------------------------------------------------------------------------
+// 4. TENNIS ENGINE
+// --------------------------------------------------------------------------
+const tennisPointsMap = [0, 15, 30, 40];
+let tP1Pts = 0;
+let tP2Pts = 0;
+let tP1Sets = [0, 0, 0];
+let tP2Sets = [0, 0, 0];
+let tCurrentSet = 0; // 0, 1, 2
+let tServer = 1;
+
+function tennisPoint(player) {
+  if (player === 1) tP1Pts++;
+  else tP2Pts++;
+
+  evaluateTennisScore();
+  updateTennisUI();
+}
+
+function evaluateTennisScore() {
+  // If both players have at least 3 points (40 - 40) -> Deuce territory
+  if (tP1Pts >= 3 && tP2Pts >= 3) {
+    if (tP1Pts === tP2Pts) {
+      // Deuce
+    } else if (tP1Pts === tP2Pts + 1) {
+      // Advantage P1
+    } else if (tP2Pts === tP1Pts + 1) {
+      // Advantage P2
+    } else if (tP1Pts >= tP2Pts + 2) {
+      winTennisGame(1);
+    } else if (tP2Pts >= tP1Pts + 2) {
+      winTennisGame(2);
+    }
+  } else {
+    if (tP1Pts > 3) winTennisGame(1);
+    else if (tP2Pts > 3) winTennisGame(2);
+  }
+}
+
+function winTennisGame(winner) {
+  tP1Pts = 0;
+  tP2Pts = 0;
+  toggleTennisServer();
+
+  if (winner === 1) tP1Sets[tCurrentSet]++;
+  else tP2Sets[tCurrentSet]++;
+
+  // Check set winner (first to 6 games with 2 game lead)
+  const g1 = tP1Sets[tCurrentSet];
+  const g2 = tP2Sets[tCurrentSet];
+  if ((g1 >= 6 && g1 >= g2 + 2) || g1 === 7) {
+    alert(`🎾 Set ${tCurrentSet + 1} won by ${document.getElementById('tennis-p1-name').value}!`);
+    if (tCurrentSet < 2) tCurrentSet++;
+  } else if ((g2 >= 6 && g2 >= g1 + 2) || g2 === 7) {
+    alert(`🎾 Set ${tCurrentSet + 1} won by ${document.getElementById('tennis-p2-name').value}!`);
+    if (tCurrentSet < 2) tCurrentSet++;
+  }
+}
+
+function toggleTennisServer() {
+  tServer = tServer === 1 ? 2 : 1;
+  document.getElementById('tennis-p1-server').style.display = tServer === 1 ? 'inline-block' : 'none';
+  document.getElementById('tennis-p2-server').style.display = tServer === 2 ? 'inline-block' : 'none';
+}
+
+function updateTennisUI() {
+  // Points formatting
+  let p1Display = "0";
+  let p2Display = "0";
+
+  if (tP1Pts >= 3 && tP2Pts >= 3) {
+    if (tP1Pts === tP2Pts) {
+      p1Display = "40"; p2Display = "40";
+    } else if (tP1Pts > tP2Pts) {
+      p1Display = "AD"; p2Display = "-";
+    } else {
+      p1Display = "-"; p2Display = "AD";
+    }
+  } else {
+    p1Display = (tennisPointsMap[tP1Pts] || 0).toString();
+    p2Display = (tennisPointsMap[tP2Pts] || 0).toString();
+  }
+
+  document.getElementById('tennis-p1-points').innerText = p1Display;
+  document.getElementById('tennis-p2-points').innerText = p2Display;
+
+  // Sets Games
+  document.getElementById('tennis-p1-s1').innerText = tP1Sets[0];
+  document.getElementById('tennis-p2-s1').innerText = tP2Sets[0];
+  document.getElementById('tennis-p1-s2').innerText = tP1Sets[1];
+  document.getElementById('tennis-p2-s2').innerText = tP2Sets[1];
+  document.getElementById('tennis-p1-s3').innerText = tP1Sets[2];
+  document.getElementById('tennis-p2-s3').innerText = tP2Sets[2];
+}
+
+function tennisUndo() {
+  if (tP1Pts > 0) tP1Pts--;
+  if (tP2Pts > 0) tP2Pts--;
+  updateTennisUI();
+}
+
+function resetTennis() {
+  tP1Pts = 0; tP2Pts = 0;
+  tP1Sets = [0, 0, 0]; tP2Sets = [0, 0, 0];
+  tCurrentSet = 0;
+  updateTennisUI();
+}
+
+// --------------------------------------------------------------------------
+// 5. BADMINTON ENGINE
+// --------------------------------------------------------------------------
+let bmP1 = 0;
+let bmP2 = 0;
+let bmSets = [[0, 0], [0, 0], [0, 0]];
+let bmCurrentSet = 0;
+
+function bmPoint(player) {
+  if (player === 1) bmP1++;
+  else bmP2++;
+
+  checkBadmintonGameWin();
+  updateBadmintonUI();
+}
+
+function bmPointAdjust(player, delta) {
+  if (player === 1) bmP1 = Math.max(0, bmP1 + delta);
+  else bmP2 = Math.max(0, bmP2 + delta);
+  updateBadmintonUI();
+}
+
+function checkBadmintonGameWin() {
+  // Official BWF: 21 points with 2 point lead, max 30 points
+  if ((bmP1 >= 21 && bmP1 >= bmP2 + 2) || bmP1 === 30) {
+    alert(`🏸 Game ${bmCurrentSet + 1} won by ${document.getElementById('bm-p1-name').value} (${bmP1} - ${bmP2})!`);
+    bmSets[bmCurrentSet] = [bmP1, bmP2];
+    bmP1 = 0; bmP2 = 0;
+    if (bmCurrentSet < 2) bmCurrentSet++;
+  } else if ((bmP2 >= 21 && bmP2 >= bmP1 + 2) || bmP2 === 30) {
+    alert(`🏸 Game ${bmCurrentSet + 1} won by ${document.getElementById('bm-p2-name').value} (${bmP2} - ${bmP1})!`);
+    bmSets[bmCurrentSet] = [bmP1, bmP2];
+    bmP1 = 0; bmP2 = 0;
+    if (bmCurrentSet < 2) bmCurrentSet++;
+  }
+}
+
+function updateBadmintonUI() {
+  document.getElementById('bm-p1-points').innerText = bmP1;
+  document.getElementById('bm-p2-points').innerText = bmP2;
+
+  // Service court rules: Even = Right, Odd = Left
+  const p1Side = bmP1 % 2 === 0 ? "Right Court" : "Left Court";
+  const p2Side = bmP2 % 2 === 0 ? "Right Court" : "Left Court";
+  document.getElementById('bm-p1-service').innerText = `Service Court: ${p1Side}`;
+  document.getElementById('bm-p2-service').innerText = `Service Court: ${p2Side}`;
+
+  // Game alert
+  const alertEl = document.getElementById('bm-alert-banner');
+  if (bmP1 >= 20 || bmP2 >= 20) {
+    alertEl.style.display = 'block';
+    if (bmP1 === 20 && bmP2 === 20) {
+      alertEl.innerText = "DEUCE! Need a 2-point lead (Max 30 points).";
+    } else if (bmP1 >= 20 && bmP1 > bmP2) {
+      alertEl.innerText = `GAME POINT for ${document.getElementById('bm-p1-name').value}!`;
+    } else if (bmP2 >= 20 && bmP2 > bmP1) {
+      alertEl.innerText = `GAME POINT for ${document.getElementById('bm-p2-name').value}!`;
+    }
+  } else {
+    alertEl.style.display = 'none';
+  }
+
+  // Set scores
+  document.getElementById('bm-set1-score').innerText = `${bmSets[0][0]} - ${bmSets[0][1]}`;
+  document.getElementById('bm-set2-score').innerText = `${bmSets[1][0]} - ${bmSets[1][1]}`;
+  document.getElementById('bm-set3-score').innerText = `${bmSets[2][0]} - ${bmSets[2][1]}`;
+}
+
+function resetBadminton() {
+  bmP1 = 0; bmP2 = 0;
+  bmSets = [[0, 0], [0, 0], [0, 0]];
+  bmCurrentSet = 0;
+  updateBadmintonUI();
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', () => {
+  switchSport(currentSport);
+  updateCricketUI();
+  updateFootballTimerDisplay();
+  updateTennisUI();
+  updateBadmintonUI();
+});
+</script>
+{% endblock %}

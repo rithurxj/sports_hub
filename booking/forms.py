@@ -2,13 +2,13 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import Group, User
 from django.utils import timezone
-from .models import Booking, TimeSlot, Turf, UserProfile
+from .models import Booking, Review, TimeSlot, Turf, UserProfile
 
 
 class RegisterForm(UserCreationForm):
     ROLE_CHOICES = [
-        ("CUSTOMER", "⚽ Player / Customer (Browse & Book Turfs)"),
-        ("ADMIN", "🏟️ Turf Admin / Manager (Manage Turfs & Bookings)"),
+        ("CUSTOMER", "⚽🏸 Player / Customer (Browse & Book Grounds & Courts)"),
+        ("ADMIN", "🏟️ Venue Admin / Manager (Manage Venues & Bookings)"),
     ]
 
     first_name = forms.CharField(max_length=30, required=True, label="Full Name", widget=forms.TextInput(attrs={
@@ -28,7 +28,7 @@ class RegisterForm(UserCreationForm):
         initial="CUSTOMER",
         widget=forms.RadioSelect(attrs={"class": "role-radio"}),
         label="I am registering as:",
-        help_text="Choose Player to book grounds, or Turf Manager to list and manage your own grounds."
+        help_text="Choose Player to book grounds & courts, or Venue Manager to list and manage your venues."
     )
 
     class Meta:
@@ -122,14 +122,14 @@ class TurfForm(forms.ModelForm):
             "is_active",
         )
         widgets = {
-            "name": forms.TextInput(attrs={"class": "form-control", "placeholder": "e.g., GreenField Football Arena"}),
+            "name": forms.TextInput(attrs={"class": "form-control", "placeholder": "e.g., Apex Badminton Arena or GreenField Turf"}),
             "sport_type": forms.Select(attrs={"class": "form-control"}),
             "location": forms.TextInput(attrs={"class": "form-control", "placeholder": "e.g., Koramangala, Bangalore"}),
-            "price": forms.NumberInput(attrs={"class": "form-control", "placeholder": "e.g., 1200"}),
-            "surface_type": forms.TextInput(attrs={"class": "form-control", "placeholder": "e.g., Artificial Grass (FIFA Certified)"}),
+            "price": forms.NumberInput(attrs={"class": "form-control", "placeholder": "e.g., 600"}),
+            "surface_type": forms.TextInput(attrs={"class": "form-control", "placeholder": "e.g., Synthetic Mat, Teak Wood, Hard Court, or Turf"}),
             "contact_number": forms.TextInput(attrs={"class": "form-control", "placeholder": "+91 98765 43210"}),
-            "image_url": forms.URLInput(attrs={"class": "form-control", "placeholder": "https://example.com/turf.jpg (optional)"}),
-            "description": forms.Textarea(attrs={"class": "form-control", "rows": 4, "placeholder": "Describe turf dimensions, floodlights, amenities..."}),
+            "image_url": forms.URLInput(attrs={"class": "form-control", "placeholder": "https://example.com/venue.jpg (optional)"}),
+            "description": forms.Textarea(attrs={"class": "form-control", "rows": 4, "placeholder": "Describe court dimensions, lighting, amenities, non-marking shoe requirements..."}),
             "is_active": forms.CheckboxInput(attrs={"class": "form-check-input"}),
         }
 
@@ -143,3 +143,26 @@ class TimeSlotForm(forms.ModelForm):
             "end_time": forms.TimeInput(attrs={"type": "time", "class": "form-control"}),
             "is_active": forms.CheckboxInput(attrs={"class": "form-check-input"}),
         }
+
+
+class ReviewForm(forms.ModelForm):
+    class Meta:
+        model = Review
+        fields = ("rating", "title", "comment")
+        widgets = {
+            "rating": forms.Select(attrs={
+                "class": "form-control rating-select",
+                "id": "review-rating-select",
+            }),
+            "title": forms.TextInput(attrs={
+                "class": "form-control",
+                "placeholder": "Headline of your review (e.g. Great floodlights & crisp artificial turf!)",
+            }),
+            "comment": forms.Textarea(attrs={
+                "class": "form-control",
+                "rows": 4,
+                "placeholder": "Tell other players about grass quality, lighting, parking, ball bounce, amenities...",
+                "required": True,
+            }),
+        }
+

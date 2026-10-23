@@ -972,3 +972,1426 @@ img {
     grid-template-columns: 1fr;
   }
 }
+
+/* =========================================================
+   TURFBOOK — NATURAL SPORTS CLUB THEME
+   A grounded green, warm-white and charcoal palette.
+   These overrides restyle the existing components without
+   requiring changes to your Django templates.
+   ========================================================= */
+
+:root {
+  --bg-page: #f5f6f1;
+  --bg-surface: #ffffff;
+  --bg-subtle: #eef1e9;
+  --bg-muted: #dfe5d7;
+
+  --text-primary: #202820;
+  --text-secondary: #566155;
+  --text-muted: #778174;
+  --text-dim: #9ba397;
+  --text-inverse: #ffffff;
+
+  --border-light: #edf0e9;
+  --border-subtle: #dfe5d9;
+  --border-strong: #c7d0c0;
+  --border-focus: #34734b;
+
+  --accent-primary: #276749;
+  --accent-primary-hover: #1f553c;
+  --accent-blue: #315f91;
+  --accent-blue-subtle: #edf4fb;
+  --accent-rose: #b84242;
+  --accent-rose-subtle: #fff0ef;
+  --accent-amber: #98651c;
+  --accent-amber-subtle: #fff7e7;
+
+  --shadow-sm: 0 2px 5px rgba(31, 48, 31, 0.06);
+  --shadow-md: 0 5px 14px rgba(31, 48, 31, 0.08);
+  --shadow-lg: 0 12px 28px rgba(31, 48, 31, 0.10);
+
+  --radius-sm: 5px;
+  --radius-md: 9px;
+  --radius-lg: 12px;
+  --transition: all 0.18s ease;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--bg-page);
+  color: var(--text-primary);
+  font-size: 15px;
+}
+
+a:hover {
+  color: var(--accent-primary);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+/* Navigation */
+.navbar {
+  min-height: 68px;
+  height: auto;
+  padding: 12px 5.5%;
+  background: #fff;
+  border-bottom: 1px solid #e2e7de;
+  box-shadow: 0 2px 8px rgba(32, 40, 32, 0.025);
+}
+
+.brand {
+  font-size: 20px;
+  letter-spacing: -0.6px;
+}
+
+.brand-icon {
+  width: 35px;
+  height: 35px;
+  background: var(--accent-primary);
+  border-radius: 7px;
+}
+
+.nav-links {
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.nav-item {
+  padding: 8px 11px;
+}
+
+.nav-item:hover {
+  background: #f0f4ed;
+  color: var(--accent-primary);
+}
+
+.nav-cta {
+  background: var(--accent-primary);
+  border-radius: 5px;
+  padding: 9px 15px;
+}
+
+.nav-cta:hover {
+  background: var(--accent-primary-hover);
+}
+
+.role-admin {
+  background: #f8f0df;
+  color: #78531c;
+  border-color: #e8d8b5;
+}
+
+/* Homepage hero */
+.hero {
+  padding: clamp(42px, 6vw, 76px) 5.5%;
+  background: #fff;
+  gap: clamp(28px, 4vw, 54px);
+}
+
+.hero-pill {
+  background: #edf4eb;
+  border-color: #d9e6d5;
+  color: #356343;
+  border-radius: 5px;
+}
+
+.hero h1 {
+  max-width: 700px;
+  font-size: clamp(34px, 4.2vw, 54px);
+  line-height: 1.12;
+  letter-spacing: -1.2px;
+}
+
+.hero h1 span {
+  color: var(--accent-primary);
+}
+
+.hero p {
+  color: #5b6659;
+  font-size: 16px;
+  line-height: 1.75;
+}
+
+.hero-visual {
+  border-radius: 8px;
+  border-color: #dfe5d9;
+  box-shadow: var(--shadow-md);
+}
+
+.hero-visual img {
+  min-height: 260px;
+  filter: none;
+}
+
+.hero-stats-bar {
+  background: #f4f6f0;
+  border-color: #e3e8de;
+  border-radius: 7px;
+}
+
+.hero-stat-num {
+  color: var(--accent-primary);
+}
+
+/* Buttons */
+.btn {
+  min-height: 40px;
+  border-radius: 5px;
+  font-weight: 600;
+}
+
+.btn-primary {
+  background: var(--accent-primary);
+  color: #fff !important;
+}
+
+.btn-primary:hover {
+  background: var(--accent-primary-hover);
+  transform: translateY(-1px);
+}
+
+.btn-secondary,
+.btn-outline {
+  background: #fff;
+  border-color: #d8e0d4;
+  color: var(--text-primary) !important;
+}
+
+.btn-secondary:hover,
+.btn-outline:hover {
+  background: #f1f5ee;
+  border-color: #bdcbb8;
+}
+
+.btn-danger {
+  color: #b84242;
+  border-color: #edc9c6;
+}
+
+.btn-danger:hover {
+  background: #fff0ef;
+}
+
+/* Main content and section headings */
+.container {
+  width: 100%;
+  max-width: 1180px;
+}
+
+.section {
+  padding: 42px 0 52px;
+}
+
+.section-title {
+  font-size: clamp(23px, 2.4vw, 29px);
+  letter-spacing: -0.65px;
+}
+
+.section-eyebrow {
+  color: var(--accent-primary);
+  letter-spacing: 1px;
+}
+
+/* Turf cards */
+.turf-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 290px), 1fr));
+  gap: 22px;
+}
+
+.turf-card {
+  border-color: #e0e5dc;
+  border-radius: 8px;
+  box-shadow: 0 2px 7px rgba(33, 48, 32, 0.035);
+}
+
+.turf-card:hover {
+  border-color: #c5d2bf;
+  box-shadow: var(--shadow-md);
+  transform: translateY(-3px);
+}
+
+.turf-card-media {
+  height: 205px;
+  border-bottom-color: #e0e5dc;
+}
+
+.turf-card-media img {
+  transition: transform 0.3s ease;
+}
+
+.turf-card:hover .turf-card-media img {
+  transform: scale(1.025);
+}
+
+.turf-sport-badge {
+  border-radius: 5px;
+  border-color: rgba(223, 229, 217, 0.9);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.turf-card-body {
+  padding: 21px;
+}
+
+.turf-card-title {
+  font-size: 18px;
+  letter-spacing: -0.25px;
+}
+
+.turf-card-location {
+  color: #6d796a;
+}
+
+.turf-card-desc {
+  color: #5b6659;
+  line-height: 1.65;
+}
+
+.turf-surface-pill {
+  background: #f0f4ec;
+  color: #456247;
+  border-color: #dce6d7;
+}
+
+.turf-price {
+  color: var(--accent-primary);
+}
+
+/* Search and sport filters */
+.filter-bar {
+  border-radius: 8px;
+  border-color: #e0e5dc;
+  box-shadow: var(--shadow-sm);
+}
+
+.sport-tabs {
+  background: #f0f3ec;
+  border-color: #e0e5dc;
+}
+
+.sport-tab {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.sport-tab.active {
+  color: var(--accent-primary);
+  box-shadow: 0 1px 3px rgba(33, 48, 32, 0.09);
+}
+
+.search-box input {
+  min-height: 40px;
+  border-color: #dce3d7;
+  border-radius: 5px;
+}
+
+.search-box input:focus {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px rgba(39, 103, 73, 0.10);
+}
+
+/* Booking and time slots */
+.booking-grid {
+  gap: 24px;
+}
+
+.slot-selection-panel,
+.booking-summary-card,
+.form-card {
+  border-color: #e0e5dc;
+  border-radius: 8px;
+  box-shadow: var(--shadow-sm);
+}
+
+.slot-selection-panel {
+  padding: clamp(18px, 3vw, 28px);
+}
+
+.slot-chip {
+  border-color: #dfe5d9;
+  border-radius: 6px;
+}
+
+.slot-chip.available:hover {
+  border-color: #8eae8b;
+  background: #f1f6ee;
+}
+
+.slot-chip.selected {
+  background: var(--accent-primary) !important;
+  border-color: var(--accent-primary) !important;
+}
+
+.slot-chip.booked .slot-chip-status {
+  color: var(--accent-rose);
+}
+
+.dot-avail {
+  background: var(--accent-primary);
+}
+
+.booking-summary-card {
+  top: 84px;
+}
+
+.summary-row.total {
+  color: var(--accent-primary);
+}
+
+/* Forms */
+.form-card {
+  padding: clamp(22px, 4vw, 34px);
+}
+
+.form-group label {
+  color: #354333;
+}
+
+.form-control {
+  min-height: 42px;
+  border-color: #d9e1d4;
+  border-radius: 5px;
+  background: #fff;
+}
+
+.form-control:focus {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px rgba(39, 103, 73, 0.10);
+}
+
+.form-control::placeholder,
+.search-box input::placeholder {
+  color: #929b8e;
+}
+
+.role-card-select {
+  border-radius: 6px;
+  border-color: #dce3d7;
+}
+
+.role-radio-label input[type="radio"]:checked + .role-card-select {
+  background: #edf4eb;
+  border-color: var(--accent-primary);
+}
+
+/* Dashboard and tables */
+.stat-card {
+  border-color: #e0e5dc;
+  border-radius: 8px;
+  box-shadow: var(--shadow-sm);
+}
+
+.stat-num {
+  color: var(--accent-primary);
+}
+
+.stat-label {
+  letter-spacing: 0.65px;
+}
+
+.table-responsive {
+  border-color: #e0e5dc;
+  border-radius: 8px;
+}
+
+.data-table th {
+  background: #f0f3ec;
+  color: #53604f;
+}
+
+.data-table td {
+  border-bottom-color: #edf0e9;
+}
+
+.data-table tbody tr:hover td {
+  background: #f8faf6;
+}
+
+.status-confirmed {
+  background: #edf5ed;
+  color: #28633a;
+  border-color: #d0e4d0;
+}
+
+.status-cancelled {
+  background: #fff0ef;
+  color: #b84242;
+  border-color: #edc9c6;
+}
+
+.status-completed {
+  background: #f0f3ec;
+  color: #64705f;
+}
+
+/* Feedback messages */
+.flash-message {
+  border-radius: 6px;
+}
+
+.flash-success {
+  background: #edf7ed;
+  border-color: #cfe5ce;
+  color: #28633a;
+}
+
+.flash-error {
+  background: #fff0ef;
+  border-color: #edc9c6;
+  color: #b84242;
+}
+
+/* Footer */
+.site-footer {
+  margin-top: auto;
+  padding: 27px 5.5%;
+  background: #fff;
+  border-top-color: #e0e5dc;
+  color: #707a6c;
+}
+
+/* Keyboard focus */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid #43845b;
+  outline-offset: 2px;
+}
+
+/* Responsive layout */
+@media (max-width: 860px) {
+  .navbar {
+    gap: 12px;
+    padding: 12px 4%;
+    flex-wrap: wrap;
+  }
+
+  .nav-links {
+    gap: 5px;
+  }
+
+  .hero {
+    padding: 42px 5%;
+  }
+
+  .hero-stats-bar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .booking-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .booking-summary-card {
+    position: static;
+  }
+
+  .role-select-box {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .navbar {
+    align-items: flex-start;
+  }
+
+  .nav-links {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .nav-item {
+    padding: 7px 9px;
+    font-size: 13px;
+  }
+
+  .hero {
+    padding: 34px 5%;
+  }
+
+  .hero h1 {
+    font-size: clamp(31px, 9vw, 42px);
+  }
+
+  .hero p {
+    font-size: 15px;
+  }
+
+  .hero-visual img {
+    height: 235px;
+    min-height: 0;
+  }
+
+  .hero-stats-bar {
+    gap: 18px 12px;
+    padding: 14px;
+  }
+
+  .hero-stat-num {
+    font-size: 20px;
+  }
+
+  .container {
+    padding: 0 16px;
+  }
+
+  .section {
+    padding: 32px 0 40px;
+  }
+
+  .turf-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .turf-card-media {
+    height: 195px;
+  }
+
+  .filter-bar {
+    align-items: stretch;
+    padding: 13px;
+  }
+
+  .sport-tabs {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  .sport-tab {
+    white-space: nowrap;
+    padding: 7px 11px;
+  }
+
+  .search-box {
+    max-width: none;
+    width: 100%;
+  }
+
+  .slot-legend {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .role-select-box {
+    grid-template-columns: 1fr;
+  }
+
+  .data-table {
+    min-width: 620px;
+  }
+
+  .site-footer {
+    padding: 24px 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
+
+/* ==========================================================================
+   RESPONSIVE + MOTION UPDATE
+   Add this section after the existing styles. It keeps the current HTML intact.
+   ========================================================================== */
+
+:root {
+  --bg-page: #f7f8f3;
+  --bg-surface: #ffffff;
+  --bg-subtle: #eef4e9;
+  --bg-muted: #dce8d5;
+  --text-primary: #1c2b20;
+  --text-secondary: #526356;
+  --text-muted: #718073;
+  --border-light: #edf1e9;
+  --border-subtle: #dce5d8;
+  --border-strong: #c7d5c1;
+  --border-focus: #2f6b3d;
+  --accent-primary: #2f6b3d;
+  --accent-primary-hover: #245631;
+  --accent-blue: #427d53;
+  --accent-blue-subtle: #eaf4e8;
+  --accent-rose: #c45c48;
+  --accent-rose-subtle: #fff0e9;
+  --accent-amber: #b17a28;
+  --accent-amber-subtle: #fff6df;
+  --shadow-sm: 0 2px 8px rgba(36, 69, 42, .06);
+  --shadow-md: 0 8px 22px rgba(36, 69, 42, .09);
+  --shadow-lg: 0 18px 42px rgba(36, 69, 42, .13);
+  --transition: all .24s ease;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 84px;
+}
+
+body {
+  overflow-x: hidden;
+  background:
+    radial-gradient(ellipse at 5% 0%, rgba(198, 220, 180, .22), transparent 34%),
+    var(--bg-page);
+}
+
+button, input, select, textarea {
+  font: inherit;
+}
+
+button, .btn, .nav-item, .sport-tab, .slot-chip, .turf-card {
+  -webkit-tap-highlight-color: transparent;
+}
+
+:focus-visible {
+  outline: 3px solid rgba(65, 126, 76, .45);
+  outline-offset: 3px;
+}
+
+/* Header and navigation */
+.navbar {
+  min-height: 66px;
+  height: auto;
+  gap: 18px;
+  background: rgba(255, 255, 255, .94);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 3px 18px rgba(25, 55, 30, .04);
+}
+
+.brand, .nav-item, .nav-cta, .nav-btn-logout {
+  transition: transform .22s ease, color .22s ease, background .22s ease;
+}
+
+.brand:hover { transform: translateY(-1px); }
+.nav-item:hover, .nav-cta:hover, .nav-btn-logout:hover { transform: translateY(-2px); }
+
+/* Hero: soft color drift, text entrance, and cycling supporting phrase */
+.hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: linear-gradient(125deg, #eaf3e3, #f8f6e9, #e0eee0, #f5f1df);
+  background-size: 260% 260%;
+  animation: turfThemeDrift 16s ease-in-out infinite;
+}
+
+.hero::before,
+.hero::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+  border-radius: 50%;
+  filter: blur(2px);
+}
+
+.hero::before {
+  width: clamp(180px, 30vw, 420px);
+  height: clamp(180px, 30vw, 420px);
+  right: -8%;
+  top: -30%;
+  background: rgba(104, 158, 93, .14);
+  animation: turfFloat 9s ease-in-out infinite;
+}
+
+.hero::after {
+  width: clamp(140px, 20vw, 290px);
+  height: clamp(140px, 20vw, 290px);
+  left: -5%;
+  bottom: -40%;
+  background: rgba(217, 184, 102, .14);
+  animation: turfFloat 12s ease-in-out infinite reverse;
+}
+
+.hero h1 {
+  animation: turfTextEnter .8s cubic-bezier(.2, .7, .2, 1) both;
+  letter-spacing: -.045em;
+}
+
+.hero h1 span {
+  color: var(--accent-primary);
+  background: linear-gradient(90deg, #2f6b3d, #639b50, #a07b31, #2f6b3d);
+  background-size: 240% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: turfTextColor 8s linear infinite;
+}
+
+/* A rotating phrase appears below the hero heading without changing HTML.
+   Edit the phrases here if you want wording that matches your home page. */
+.hero h1::after {
+  content: "Find your game. Book your turf.";
+  display: block;
+  min-height: 1.25em;
+  margin-top: .16em;
+  color: #427d53;
+  font-size: .44em;
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: -.02em;
+  animation: turfPhraseSlide 12s infinite;
+}
+
+.hero p {
+  animation: turfTextEnter .9s .12s both;
+}
+
+.hero-actions, .hero-stats-bar {
+  animation: turfTextEnter .9s .2s both;
+}
+
+.hero-visual img {
+  border-radius: 18px;
+  box-shadow: var(--shadow-lg);
+  animation: turfImageReveal .9s .1s both;
+  transition: transform .5s cubic-bezier(.2, .7, .2, 1), filter .5s ease;
+}
+
+.hero-visual:hover img {
+  transform: scale(1.025) rotate(.3deg);
+  filter: saturate(1.06);
+}
+
+/* Cards and controls */
+.turf-card {
+  border: 1px solid rgba(57, 96, 54, .10);
+  box-shadow: var(--shadow-sm);
+  animation: turfCardEnter .6s both;
+  transition: transform .28s ease, box-shadow .28s ease, border-color .28s ease;
+}
+
+.turf-card:hover {
+  transform: translateY(-6px);
+  border-color: rgba(47, 107, 61, .28);
+  box-shadow: var(--shadow-lg);
+}
+
+.turf-card-media img {
+  transition: transform .55s cubic-bezier(.2, .7, .2, 1), filter .4s ease;
+}
+
+.turf-card:hover .turf-card-media img {
+  transform: scale(1.045);
+  filter: saturate(1.08);
+}
+
+.btn, .sport-tab, .slot-chip, .form-control {
+  transition: transform .2s ease, box-shadow .2s ease, background-color .2s ease,
+              border-color .2s ease, color .2s ease;
+}
+
+.btn-primary {
+  background: linear-gradient(115deg, #2f6b3d, #467e47, #2f6b3d);
+  background-size: 200% 100%;
+  box-shadow: 0 5px 14px rgba(47, 107, 61, .17);
+}
+
+.btn-primary:hover {
+  background-position: 100% 0;
+  box-shadow: 0 8px 20px rgba(47, 107, 61, .23);
+  transform: translateY(-2px);
+}
+
+.btn:active, .sport-tab:active, .slot-chip:active {
+  transform: scale(.98);
+}
+
+.form-card, .booking-summary-card, .slot-selection-panel {
+  border-color: var(--border-subtle);
+  box-shadow: var(--shadow-md);
+}
+
+.form-control:focus {
+  border-color: #65956a;
+  box-shadow: 0 0 0 4px rgba(75, 132, 78, .12);
+}
+
+.site-footer {
+  background: #203c29;
+  color: #f5f7ef;
+}
+
+/* Motion keyframes */
+@keyframes turfThemeDrift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes turfFloat {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(-14px, 18px, 0) scale(1.06); }
+}
+
+@keyframes turfTextEnter {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes turfImageReveal {
+  from { opacity: 0; transform: translateX(18px) scale(.985); }
+  to { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+@keyframes turfTextColor {
+  to { background-position: 240% center; }
+}
+
+@keyframes turfPhraseSlide {
+  0%, 32% { content: "Find your game. Book your turf."; opacity: 1; transform: translateY(0); }
+  33%, 65% { content: "Great grounds. Better game days."; opacity: 1; transform: translateY(0); }
+  66%, 99% { content: "Your next match starts here."; opacity: 1; transform: translateY(0); }
+  100% { content: "Find your game. Book your turf."; opacity: 1; transform: translateY(0); }
+}
+
+@keyframes turfCardEnter {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Tablet */
+@media (max-width: 900px) {
+  .navbar {
+    flex-wrap: wrap;
+    justify-content: space-between;
+    padding: 12px 5%;
+    gap: 10px;
+  }
+
+  .nav-links {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .hero {
+    padding: clamp(28px, 5vw, 48px) 5%;
+  }
+
+  .hero-visual img {
+    width: 100%;
+    object-fit: cover;
+  }
+
+  .turf-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .booking-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .form-card, .booking-summary-card, .slot-selection-panel {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .filter-bar {
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .data-table-wrap, .table-responsive {
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Phone */
+@media (max-width: 600px) {
+  body { font-size: 15px; }
+
+  .navbar {
+    align-items: flex-start;
+    padding: 12px 16px;
+  }
+
+  .brand { font-size: 19px; }
+
+  .nav-links {
+    display: flex;
+    width: 100%;
+    gap: 5px;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding: 4px 0 7px;
+    scrollbar-width: thin;
+  }
+
+  .nav-item, .nav-cta, .nav-btn-logout {
+    flex: 0 0 auto;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  .hero {
+    padding: 30px 18px;
+    text-align: left;
+  }
+
+  .hero h1 {
+    font-size: clamp(29px, 8vw, 40px);
+    line-height: 1.12;
+  }
+
+  .hero h1::after {
+    font-size: .48em;
+    min-height: 2.5em;
+    max-width: 100%;
+  }
+
+  .hero p { font-size: 14px; line-height: 1.7; }
+
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .hero-actions .btn { width: 100%; }
+
+  .hero-visual { margin-top: 22px; }
+
+  .hero-visual img {
+    height: 220px;
+    min-height: 0;
+    border-radius: 14px;
+  }
+
+  .hero-stats-bar {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px 10px;
+  }
+
+  .container { padding: 0 16px; }
+
+  .section { padding: 30px 0 38px; }
+
+  .section-title { font-size: clamp(24px, 7vw, 32px); }
+
+  .turf-grid { grid-template-columns: minmax(0, 1fr); }
+
+  .turf-card-media { height: 205px; }
+
+  .filter-bar { padding: 12px; }
+
+  .sport-tabs {
+    display: flex;
+    overflow-x: auto;
+    max-width: 100%;
+    padding-bottom: 4px;
+  }
+
+  .sport-tab { flex: 0 0 auto; }
+
+  .search-box, .search-box input { width: 100%; min-width: 0; }
+
+  .slot-chips-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+  .form-card, .booking-summary-card, .slot-selection-panel {
+    padding: 18px;
+    border-radius: 14px;
+  }
+
+  .form-control { width: 100%; min-width: 0; }
+
+  .role-select-box { grid-template-columns: minmax(0, 1fr); }
+
+  .data-table {
+    min-width: 580px;
+  }
+
+  .site-footer {
+    padding: 24px 16px;
+    text-align: center;
+  }
+}
+
+/* Small phones */
+@media (max-width: 380px) {
+  .hero h1 { font-size: 28px; }
+  .hero-visual img { height: 185px; }
+  .hero-stats-bar { grid-template-columns: 1fr 1fr; }
+  .btn { padding: 10px 13px; }
+}
+
+/* Accessibility: respect visitors who prefer reduced motion. */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
+
+/* ==========================================================================
+   SUPPORTING COMPONENT UTILITIES (Harmonized with Natural Turf Theme)
+   ========================================================================== */
+
+/* Brand title and subtitle */
+.brand-text-block {
+  display: flex;
+  flex-direction: column;
+}
+
+.brand-title {
+  font-family: var(--font-heading);
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+  color: var(--text-primary);
+  line-height: 1.1;
+}
+
+.brand-title span {
+  color: var(--accent-primary);
+  font-weight: 700;
+}
+
+.brand-tagline {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-top: 1px;
+}
+
+/* Quick Search Card on Homepage */
+.quick-search-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 18px 24px;
+  margin-top: -24px;
+  position: relative;
+  z-index: 10;
+  box-shadow: var(--shadow-md);
+}
+
+.quick-search-form {
+  display: grid;
+  grid-template-columns: 1.2fr 1.5fr 1fr auto;
+  gap: 16px;
+  align-items: flex-end;
+}
+
+.quick-search-field label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Sports Categories Grid */
+.sports-category-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.sport-category-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  transition: var(--transition);
+  box-shadow: var(--shadow-sm);
+}
+
+.sport-category-card:hover {
+  border-color: var(--accent-primary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.sport-cat-icon {
+  font-size: 28px;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-subtle);
+  border-radius: var(--radius-sm);
+}
+
+.sport-cat-title {
+  font-family: var(--font-heading);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.sport-cat-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* Turf amenities */
+.turf-amenities-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.amenity-chip {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: var(--bg-subtle);
+  padding: 2px 7px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-light);
+}
+
+/* Footer layout elements */
+.footer-top-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr 1.2fr;
+  gap: 36px;
+  text-align: left;
+  margin-bottom: 32px;
+}
+
+.footer-heading {
+  font-family: var(--font-heading);
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: #ffffff;
+  margin-bottom: 16px;
+}
+
+.footer-nav-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.footer-nav-list a {
+  color: #a8b8a5;
+  font-size: 13.5px;
+  transition: color 0.2s ease;
+}
+
+.footer-nav-list a:hover {
+  color: #ffffff;
+}
+
+.footer-brand-desc {
+  color: #a8b8a5;
+  font-size: 13.5px;
+  line-height: 1.6;
+  margin: 12px 0 16px;
+  max-width: 320px;
+}
+
+.footer-bottom-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 12.5px;
+  color: #a8b8a5;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+@media (max-width: 860px) {
+  .footer-top-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+}
+
+@media (max-width: 560px) {
+  .footer-top-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .quick-search-form {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ==========================================================================
+   HERO MOTION SLIDESHOW BACKGROUND
+   ========================================================================== */
+.hero-slideshow-hero {
+  position: relative !important;
+  overflow: hidden !important;
+  isolation: isolate !important;
+  display: block !important;
+  grid-template-columns: none !important;
+  padding: clamp(54px, 7vw, 92px) 6% !important;
+  min-height: 520px;
+  background: #0f1e14 !important;
+}
+
+.hero-slideshow-track {
+  position: absolute;
+  inset: -12px;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.hero-slide {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0;
+  transform: scale(1.02);
+  will-change: transform, opacity;
+  animation: heroSlideFade 24s infinite ease-in-out;
+}
+
+.hero-slide-1 {
+  animation-delay: 0s;
+}
+
+.hero-slide-2 {
+  animation-delay: 6s;
+}
+
+.hero-slide-3 {
+  animation-delay: 12s;
+}
+
+.hero-slide-4 {
+  animation-delay: 18s;
+}
+
+@keyframes heroSlideFade {
+  0% {
+    opacity: 0;
+    transform: scale(1.02) translate(0, 0);
+  }
+  3% {
+    opacity: 1;
+  }
+  24% {
+    opacity: 1;
+    transform: scale(1.08) translate(-1%, -1%);
+  }
+  28% {
+    opacity: 0;
+    transform: scale(1.10) translate(-1.5%, -1.5%);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.02) translate(0, 0);
+  }
+}
+
+.hero-slideshow-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    rgba(247, 248, 243, 0.96) 0%,
+    rgba(247, 248, 243, 0.91) 48%,
+    rgba(247, 248, 243, 0.68) 75%,
+    rgba(247, 248, 243, 0.40) 100%
+  );
+  backdrop-filter: blur(1.5px);
+  -webkit-backdrop-filter: blur(1.5px);
+}
+
+.hero-live-indicator {
+  position: absolute;
+  right: 6%;
+  bottom: 28px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-sm);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+  transition: var(--transition);
+}
+
+.hero-live-indicator:hover {
+  background: #ffffff;
+  box-shadow: var(--shadow-md);
+}
+
+.indicator-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+  box-shadow: 0 0 8px var(--accent-primary);
+  animation: pulseDot 2s infinite ease-in-out;
+}
+
+@keyframes pulseDot {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.35);
+    opacity: 0.65;
+  }
+}
+
+@media (max-width: 860px) {
+  .hero-slideshow-overlay {
+    background: linear-gradient(
+      180deg,
+      rgba(247, 248, 243, 0.96) 0%,
+      rgba(247, 248, 243, 0.90) 65%,
+      rgba(247, 248, 243, 0.75) 100%
+    );
+  }
+  .hero-live-indicator {
+    display: none;
+  }
+}

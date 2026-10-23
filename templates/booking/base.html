@@ -4,42 +4,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Sports Hub - Simple, minimal football and cricket turf reservation platform.">
-    <title>{% block title %}Sports Hub | Turf Booking{% endblock %}</title>
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <meta name="description" content="Sports Hub - Fast, seamless reservation platform for Football turfs, Cricket arenas, Badminton courts, and Tennis clubs with real-time slot lock.">
+    <title>{% block title %}Sports Hub | Real-Time Turfs & Courts Booking{% endblock %}</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="{% static 'images/favicon.svg' %}">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Core Design System CSS -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v={% now 'U' %}">
     {% block extra_head %}{% endblock %}
 </head>
 <body>
 
 <header class="navbar">
-    <a class="brand" href="{% url 'home' %}">
-        <div class="brand-icon">⚲</div>
-        <div>Sports Hub</div>
+    <a class="brand" href="{% url 'home' %}" title="Sports Hub">
+        <div class="brand-text-block">
+            <div class="brand-title">Sports <span>Hub</span></div>
+            <div class="brand-tagline">Turfs &amp; Courts Arena</div>
+        </div>
     </a>
 
     <nav class="nav-links">
-        <a class="nav-item" href="{% url 'turf_list' %}">Explore Grounds</a>
+        <a class="nav-item" href="{% url 'turf_list' %}">
+            <span>🏟️</span> Explore Grounds
+        </a>
+
+        {% if user.is_authenticated and not user.profile.is_admin_user %}
+            <a class="nav-item" href="{% url 'scoreboard' %}" title="Live Multi-Sport Match Scoreboard">
+                <span>📟</span> Scoreboard
+            </a>
+        {% endif %}
 
         {% if user.is_authenticated %}
             {% if user.profile.is_admin_user %}
-                <a class="nav-item" href="{% url 'admin_dashboard' %}">Overview</a>
-                <a class="nav-item" href="{% url 'admin_turf_list' %}">Grounds</a>
-                <a class="nav-item" href="{% url 'admin_booking_list' %}">Bookings</a>
-                <a class="nav-item" href="/admin/" target="_blank">Django Admin</a>
+                <a class="nav-item" href="{% url 'admin_dashboard' %}">
+                    <span>📊</span> Operations Hub
+                </a>
+                <a class="nav-item" href="{% url 'admin_turf_list' %}">
+                    <span>⛳</span> Turfs
+                </a>
+                <a class="nav-item" href="{% url 'admin_booking_list' %}">
+                    <span>📅</span> Reservations
+                </a>
                 <span class="role-badge role-admin">Turf Manager</span>
             {% else %}
-                <a class="nav-item" href="{% url 'customer_dashboard' %}">Dashboard</a>
-                <a class="nav-item" href="{% url 'my_bookings' %}">My Bookings</a>
+                <a class="nav-item" href="{% url 'customer_dashboard' %}">
+                    <span>👤</span> My Dashboard
+                </a>
+                <a class="nav-item" href="{% url 'my_bookings' %}">
+                    <span>🎟️</span> Match History
+                </a>
                 <span class="role-badge role-customer">Player</span>
             {% endif %}
 
-            <form class="inline" action="{% url 'logout' %}" method="post">
+            <form class="inline" action="{% url 'logout' %}" method="post" style="display: inline-flex; margin: 0;">
                 {% csrf_token %}
-                <button class="nav-btn-logout" type="submit">Sign out ({{ user.username }})</button>
+                <button class="nav-btn-logout" type="submit" title="Sign out from Sports Hub">
+                    Sign out ({{ user.username }})
+                </button>
             </form>
         {% else %}
             <a class="nav-item" href="{% url 'login' %}">Sign in</a>
-            <a class="nav-cta" href="{% url 'register' %}">Create Account</a>
+            <a class="nav-cta" href="{% url 'register' %}">
+                Get Started Free
+            </a>
         {% endif %}
     </nav>
 </header>
@@ -60,10 +93,151 @@
 
 <footer class="site-footer">
     <div class="container">
-        <p>&copy; {% now "Y" %} Sports Hub &bull; Ground Booking & Scheduling</p>
+        <div class="footer-top-grid">
+            <!-- Col 1: Brand & Bio -->
+            <div>
+                <a class="brand" href="{% url 'home' %}" style="margin-bottom: 14px; display: inline-flex; align-items: center; gap: 12px;">
+                    <div class="brand-text-block">
+                        <div class="brand-title" style="color: #ffffff;">Sports <span style="color: var(--emerald-400);">Hub</span></div>
+                        <div class="brand-tagline" style="color: #94a3b8;">Turfs &amp; Courts Arena</div>
+                    </div>
+                </a>
+                <p class="footer-brand-desc">
+                    Next-generation sports booking engine. Reserve FIFA-grade football turfs, cricket arenas, badminton courts, and tennis clubs with real-time slot conflict prevention.
+                </p>
+                <div style="display: flex; gap: 8px; align-items: center; font-size: 11.5px; color: #94a3b8;">
+                    <span style="display: inline-flex; align-items: center; gap: 4px; background: rgba(255,255,255,0.06); padding: 4px 8px; border-radius: 4px;">
+                        🔒 256-Bit SSL
+                    </span>
+                    <span style="display: inline-flex; align-items: center; gap: 4px; background: rgba(255,255,255,0.06); padding: 4px 8px; border-radius: 4px;">
+                        ✓ Razorpay Verified
+                    </span>
+                </div>
+            </div>
+
+            <!-- Col 2: Sports Categories -->
+            <div>
+                <h4 class="footer-heading">Sports Disciplines</h4>
+                <ul class="footer-nav-list">
+                    <li><a href="{% url 'turf_list' %}?sport=FOOTBALL">⚽ Football Pitches (5v5 & 7v7)</a></li>
+                    <li><a href="{% url 'turf_list' %}?sport=CRICKET">🏏 Box Cricket &amp; Nets</a></li>
+                    <li><a href="{% url 'turf_list' %}?sport=BADMINTON">🏸 Badminton Wooden Courts</a></li>
+                    <li><a href="{% url 'turf_list' %}?sport=TENNIS">🎾 Tennis Hard &amp; Clay Courts</a></li>
+                    <li><a href="{% url 'turf_list' %}?sport=MULTI">🏆 Multi-Sport Complexes</a></li>
+                </ul>
+            </div>
+
+            <!-- Col 3: Navigation -->
+            <div>
+                <h4 class="footer-heading">Platform Links</h4>
+                <ul class="footer-nav-list">
+                    <li><a href="{% url 'home' %}">Home Page</a></li>
+                    <li><a href="{% url 'turf_list' %}">Browse All Arenas</a></li>
+                    {% if user.is_authenticated %}
+                        {% if user.profile.is_admin_user %}
+                            <li><a href="{% url 'admin_dashboard' %}">Manager Dashboard</a></li>
+                            <li><a href="{% url 'admin_turf_list' %}">Venue Inventory</a></li>
+                        {% else %}
+                            <li><a href="{% url 'customer_dashboard' %}">Player Dashboard</a></li>
+                            <li><a href="{% url 'my_bookings' %}">My Match Bookings</a></li>
+                        {% endif %}
+                    {% else %}
+                        <li><a href="{% url 'login' %}">Player Sign In</a></li>
+                        <li><a href="{% url 'register' %}">Join as Player or Host</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+
+            <!-- Col 4: Facility Info & Timings -->
+            <div>
+                <h4 class="footer-heading">Operational Timings</h4>
+                <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 14px 16px; margin-bottom: 12px; font-size: 13px;">
+                    <div style="font-weight: 700; color: #ffffff; margin-bottom: 4px;">⏰ Grounds Open Daily</div>
+                    <div style="color: #94a3b8;">06:00 AM – 11:00 PM IST</div>
+                    <div style="font-size: 11px; color: var(--emerald-400); margin-top: 6px;">💡 Night Floodlights Operational</div>
+                </div>
+                <div style="font-size: 12px; color: #94a3b8;">
+                    Instant support available via Turf Manager desk or on-venue staff.
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-bottom-bar">
+            <div>
+                &copy; {% now "Y" %} Sports Hub Technologies. All rights reserved. Designed for athletic excellence.
+            </div>
+            <div style="display: flex; align-items: center; gap: 16px;">
+                <span style="display: inline-flex; align-items: center; gap: 6px; color: var(--emerald-400);">
+                    <span style="width: 7px; height: 7px; background: var(--emerald-400); border-radius: 50%; box-shadow: 0 0 6px var(--emerald-400);"></span>
+                    All Venue Systems Online
+                </span>
+                <span>Clash-Free Booking Guarantee</span>
+            </div>
+        </div>
     </div>
 </footer>
 
 {% block extra_scripts %}{% endblock %}
+
+<!-- Universal CSRF Synchronization & Session Auto-Recovery Script -->
+<script>
+(function() {
+    function getCsrfTokenFromCookie() {
+        const name = "csrftoken=";
+        try {
+            const decodedCookie = decodeURIComponent(document.cookie || "");
+            const ca = decodedCookie.split(';');
+            for (let i = 0; i < ca.length; i++) {
+                let c = ca[i].trim();
+                if (c.indexOf(name) === 0) {
+                    return c.substring(name.length, c.length);
+                }
+            }
+        } catch (e) {
+            console.warn("CSRF cookie read notice:", e);
+        }
+        return null;
+    }
+
+    function syncAllCsrfTokens() {
+        const cookieToken = getCsrfTokenFromCookie();
+        if (!cookieToken) return;
+
+        const csrfInputs = document.querySelectorAll('input[name="csrfmiddlewaretoken"]');
+        csrfInputs.forEach(function(input) {
+            if (input.value !== cookieToken) {
+                input.value = cookieToken;
+            }
+        });
+    }
+
+    // Intercept programmatic form.submit() calls to ensure token sync
+    if (typeof HTMLFormElement !== "undefined" && HTMLFormElement.prototype) {
+        const originalSubmit = HTMLFormElement.prototype.submit;
+        HTMLFormElement.prototype.submit = function() {
+            syncAllCsrfTokens();
+            return originalSubmit.apply(this, arguments);
+        };
+    }
+
+    // Run on DOM load
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', syncAllCsrfTokens);
+    } else {
+        syncAllCsrfTokens();
+    }
+
+    // Run when restored from Back/Forward cache (BFCache)
+    window.addEventListener('pageshow', function(event) {
+        syncAllCsrfTokens();
+    });
+
+    // Run in capturing phase right before any form is submitted
+    document.addEventListener('submit', function(e) {
+        syncAllCsrfTokens();
+    }, true);
+})();
+</script>
 </body>
 </html>
+

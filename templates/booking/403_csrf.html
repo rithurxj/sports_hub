@@ -1,0 +1,55 @@
+{% extends "booking/base.html" %}
+{% load static %}
+
+{% block title %}Security Token Refreshed | Sports Hub{% endblock %}
+
+{% block content %}
+<section class="section" style="padding: 60px 0 80px;">
+    <div class="container" style="max-width: 640px; text-align: center;">
+        <div style="background: var(--bg-surface); padding: 48px 36px; border-radius: var(--radius-xl); border: 1px solid var(--border-subtle); box-shadow: var(--shadow-md);">
+            <div style="width: 72px; height: 72px; margin: 0 auto 20px; border-radius: 50%; background: #fef2f2; border: 2px solid #fecaca; display: flex; align-items: center; justify-content: center; font-size: 32px; color: #ef4444;">
+                🛡️
+            </div>
+
+            <span class="section-eyebrow" style="color: #ef4444;">Session Security Notice</span>
+            <h1 style="font-family: var(--font-display); font-size: 26px; font-weight: 800; margin: 8px 0 14px; color: var(--dark-900);">
+                Security Token Refreshed
+            </h1>
+
+            <p style="font-size: 14.5px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 24px;">
+                Your security session token was updated. This commonly occurs when you log in across multiple tabs, use the browser back button, or leave a form open while your session refreshed.
+            </p>
+
+            <div style="background: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 14px 18px; margin-bottom: 28px; text-align: left; font-size: 13px; color: var(--text-secondary);">
+                <div style="font-weight: 700; color: var(--dark-900); margin-bottom: 4px;">Quick Resolution:</div>
+                <ul style="margin: 0; padding-left: 20px; line-height: 1.6;">
+                    <li>Click <strong>Reload &amp; Try Again</strong> below to automatically refresh with active security tokens.</li>
+                    <li>If you were booking a turf, your slot selection will be preserved.</li>
+                </ul>
+            </div>
+
+            <div style="display: flex; gap: 14px; justify-content: center; flex-wrap: wrap;">
+                {% if referer %}
+                    <a href="{{ referer }}" class="btn btn-primary btn-lg" style="min-width: 200px;">
+                        🔄 Reload &amp; Try Again
+                    </a>
+                {% else %}
+                    <button onclick="window.history.back();" class="btn btn-primary btn-lg" style="min-width: 200px;">
+                        🔄 Return to Previous Page
+                    </button>
+                {% endif %}
+
+                {% if user.is_authenticated %}
+                    <a href="{% url 'customer_dashboard' %}" class="btn btn-outline btn-lg">
+                        Player Dashboard
+                    </a>
+                {% else %}
+                    <a href="{% url 'home' %}" class="btn btn-outline btn-lg">
+                        Home Page
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

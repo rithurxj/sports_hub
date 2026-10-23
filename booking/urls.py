@@ -16,8 +16,19 @@ urlpatterns = [
 
     # Customer Workflow
     path("customer-dashboard/", views.customer_dashboard, name="customer_dashboard"),
+    path("scoreboard/", views.scoreboard_view, name="scoreboard"),
     path("my-bookings/", views.my_bookings, name="my_bookings"),
     path("bookings/<int:pk>/cancel/", views.cancel_booking, name="cancel_booking"),
+
+    # Razorpay Payment Gateway Flow
+    path("bookings/<int:pk>/payment/", views.payment_checkout, name="payment_checkout"),
+    path("payment/verify/", views.payment_verify, name="payment_verify"),
+    path("bookings/<int:pk>/confirmation/", views.payment_confirmation, name="payment_confirmation"),
+
+    # Customer Feedback & Reviews
+    path("turfs/<int:turf_id>/review/", views.add_review, name="add_review"),
+    path("reviews/<int:pk>/delete/", views.delete_review, name="delete_review"),
+
 
     # Admin / Turf Manager Workflow
     path("admin-dashboard/", views.admin_dashboard, name="admin_dashboard"),

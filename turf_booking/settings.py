@@ -46,7 +46,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "turf_booking.wsgi.application"
 
-DB_ENGINE = os.environ.get("DB_ENGINE", "mysql").lower()
+DB_ENGINE = os.environ.get("DB_ENGINE", "sqlite").lower()
 if DB_ENGINE == "sqlite" or os.environ.get("USE_SQLITE") == "1":
     DATABASES = {
         'default': {
@@ -85,3 +85,18 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "customer_dashboard"
 LOGOUT_REDIRECT_URL = "home"
+
+# Razorpay Payment Gateway Settings
+RAZORPAY_KEY_ID = os.environ.get("RAZORPAY_KEY_ID", "rzp_test_sports_hub_dev")
+RAZORPAY_KEY_SECRET = os.environ.get("RAZORPAY_KEY_SECRET", "dev_secret_key_sports_hub")
+RAZORPAY_CURRENCY = "INR"
+
+# CSRF & Security Session Settings
+CSRF_TRUSTED_ORIGINS = [
+    "http://127.0.0.1:8000",
+    "http://localhost:8000",
+    "http://127.0.0.1",
+    "http://localhost",
+]
+CSRF_FAILURE_VIEW = "booking.views.csrf_failure_view"
+

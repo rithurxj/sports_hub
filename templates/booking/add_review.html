@@ -1,0 +1,95 @@
+{% extends "booking/base.html" %}
+{% load static %}
+
+{% block title %}Review {{ turf.name }} | Sports Hub{% endblock %}
+
+{% block content %}
+<section class="section" style="padding-top: 36px; padding-bottom: 60px;">
+    <div class="container" style="max-width: 680px;">
+        <!-- Breadcrumbs -->
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">
+            <a href="{% url 'home' %}">Home</a> &rsaquo; 
+            <a href="{% url 'turf_list' %}">Grounds</a> &rsaquo; 
+            <a href="{% url 'turf_detail' turf.pk %}">{{ turf.name }}</a> &rsaquo; 
+            <span style="color: var(--text-primary); font-weight: 600;">Feedback &amp; Review</span>
+        </div>
+
+        <div style="background: var(--bg-surface); padding: 36px; border-radius: var(--radius-xl); border: 1px solid var(--border-subtle); box-shadow: var(--shadow-sm);">
+            <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--border-light);">
+                <div style="width: 54px; height: 54px; border-radius: var(--radius-md); background: var(--emerald-50); display: flex; align-items: center; justify-content: center; font-size: 28px; border: 1.5px solid var(--emerald-200);">
+                    {{ turf.sport_icon }}
+                </div>
+                <div>
+                    <span class="section-eyebrow" style="color: var(--accent-amber);">Player Experience</span>
+                    <h1 style="font-family: var(--font-display); font-size: 24px; font-weight: 800; margin: 2px 0; color: var(--dark-900);">
+                        {% if existing_review %}Edit Your Review{% else %}Rate & Review Ground{% endif %}
+                    </h1>
+                    <div style="font-size: 13.5px; color: var(--text-secondary);">
+                        {{ turf.name }} &bull; {{ turf.location }}
+                    </div>
+                </div>
+            </div>
+
+            {% if booking %}
+            <div style="background: var(--emerald-50); border: 1px solid var(--emerald-200); border-radius: var(--radius-md); padding: 12px 16px; margin-bottom: 22px; font-size: 13px; color: var(--emerald-800); display: flex; align-items: center; gap: 10px;">
+                <span style="font-weight: 800; font-size: 16px;">✓</span>
+                <span>Verified Match: <strong>{{ booking.date|date:"d M Y" }}</strong> ({{ booking.time_slot }}). Your feedback will receive a <strong>Verified Player</strong> badge.</span>
+            </div>
+            {% endif %}
+
+            <form method="post">
+                {% csrf_token %}
+                {% if booking %}
+                    <input type="hidden" name="booking_id" value="{{ booking.id }}">
+                {% endif %}
+
+                <!-- Rating Selector -->
+                <div class="form-group" style="margin-bottom: 22px;">
+                    <label for="{{ form.rating.id_for_label }}" style="font-weight: 700; font-size: 14px; color: var(--dark-900);">Overall Rating *</label>
+                    <div style="margin-top: 6px;">
+                        {{ form.rating }}
+                    </div>
+                    {% if form.rating.errors %}
+                        <div class="field-error" style="color: var(--accent-rose); font-size: 12px; margin-top: 4px;">{{ form.rating.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- Review Headline -->
+                <div class="form-group" style="margin-bottom: 22px;">
+                    <label for="{{ form.title.id_for_label }}" style="font-weight: 700; font-size: 14px; color: var(--dark-900);">Review Headline (Optional)</label>
+                    {{ form.title }}
+                    {% if form.title.errors %}
+                        <div class="field-error" style="color: var(--accent-rose); font-size: 12px; margin-top: 4px;">{{ form.title.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- Feedback Comment -->
+                <div class="form-group" style="margin-bottom: 26px;">
+                    <label for="{{ form.comment.id_for_label }}" style="font-weight: 700; font-size: 14px; color: var(--dark-900);">Detailed Feedback</label>
+                    {{ form.comment }}
+                    <span style="font-size: 12px; color: var(--text-muted); display: block; margin-top: 6px;">
+                        Tips: Mention artificial turf grip, floodlight brightness, changing room hygiene, ball bounce, or staff service.
+                    </span>
+                    {% if form.comment.errors %}
+                        <div class="field-error" style="color: var(--accent-rose); font-size: 12px; margin-top: 4px;">{{ form.comment.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div style="display: flex; gap: 14px; align-items: center; flex-wrap: wrap;">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        {% if existing_review %}Save Changes{% else %}Publish Verified Review{% endif %}
+                    </button>
+                    <a href="{% url 'turf_detail' turf.pk %}" class="btn btn-secondary">
+                        Cancel
+                    </a>
+                    {% if existing_review %}
+                    <a href="{% url 'delete_review' existing_review.pk %}" onclick="return confirm('Are you sure you want to delete this review?');" class="btn btn-danger btn-sm" style="margin-left: auto;">
+                        Delete Review
+                    </a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}

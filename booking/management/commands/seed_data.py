@@ -147,6 +147,46 @@ class Command(BaseCommand):
                 "description": "Spacious 6-a-side ground with automated video replay cameras for match analysis and ample vehicle parking.",
                 "owner": admin_user,
             },
+            {
+                "name": "Apex Indoor Badminton Arena",
+                "sport_type": "BADMINTON",
+                "location": "100ft Road, Indiranagar, Bangalore",
+                "price": 600.00,
+                "surface_type": "BWF Approved Teak Wood & Synthetic Court",
+                "contact_number": "+91 98450 77889",
+                "description": "World-class 4-court indoor badminton facility with anti-glare high-bay LED lighting, non-marking shoe rental, Yonex shuttlecocks, and full air conditioning.",
+                "owner": admin_user,
+            },
+            {
+                "name": "SmashZone Badminton Hub",
+                "sport_type": "BADMINTON",
+                "location": "Green Glen Layout, Bellandur, Bangalore",
+                "price": 550.00,
+                "surface_type": "Yonex 5mm Pro Cushion Synthetic Mat",
+                "contact_number": "+91 97410 88990",
+                "description": "Spacious 6-court indoor badminton center with shock-absorbent flooring, pro stringing station, shower rooms, and spacious viewing gallery.",
+                "owner": admin_user,
+            },
+            {
+                "name": "Grand Slam Tennis Arena",
+                "sport_type": "TENNIS",
+                "location": "Koramangala 3rd Block, Bangalore",
+                "price": 900.00,
+                "surface_type": "DecoTurf Championship Hard Court",
+                "contact_number": "+91 98860 11224",
+                "description": "Championship-grade acrylic hard court with professional 1000-lux tournament floodlights, ball machine, umpire chair, and clubhouse amenities.",
+                "owner": admin_user,
+            },
+            {
+                "name": "Wimbledon Clay Tennis Club",
+                "sport_type": "TENNIS",
+                "location": "Sadashivanagar, Bangalore",
+                "price": 950.00,
+                "surface_type": "Rolled Red Clay Court",
+                "contact_number": "+91 98860 66778",
+                "description": "Classic red clay tennis court with authentic sliding dynamics, professional roller maintenance, floodlights, and certified coaches available.",
+                "owner": admin_user,
+            },
         ]
 
         created_turfs = []
@@ -157,7 +197,7 @@ class Command(BaseCommand):
             )
             created_turfs.append(turf)
 
-        self.stdout.write(self.style.SUCCESS(f"[OK] {len(created_turfs)} Turfs created (Football & Cricket)"))
+        self.stdout.write(self.style.SUCCESS(f"[OK] {len(created_turfs)} Venues created (Football, Cricket, Badminton & Tennis)"))
 
         # 6. Sample Booking for player1
         today = timezone.localdate()

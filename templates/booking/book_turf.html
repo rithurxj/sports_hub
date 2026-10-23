@@ -8,24 +8,57 @@
     <div class="container">
         <!-- Breadcrumb -->
         <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">
-            <a href="{% url 'home' %}">Home</a> &rsaquo; 
-            <a href="{% url 'turf_list' %}">Grounds</a> &rsaquo; 
-            <a href="{% url 'turf_detail' turf.pk %}">{{ turf.name }}</a> &rsaquo; 
-            <span style="color: var(--text-primary); font-weight: 500;">Reserve</span>
+            <a href="{% url 'home' %}">Home</a> &rsaquo;
+            <a href="{% url 'turf_list' %}">Grounds</a> &rsaquo;
+            <a href="{% url 'turf_detail' turf.pk %}">{{ turf.name }}</a> &rsaquo;
+            <span style="color: var(--text-primary); font-weight: 600;">Reserve Slot</span>
+        </div>
+
+        <!-- Booking Progress Steps Indicator -->
+        <div
+            style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 32px; background: var(--bg-surface); padding: 14px 20px; border-radius: var(--radius-lg); border: 1px solid var(--border-subtle); box-shadow: var(--shadow-xs);">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <div
+                    style="width: 28px; height: 28px; border-radius: 50%; background: var(--emerald-500); color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800;">
+                    1</div>
+                <div>
+                    <div style="font-size: 12.5px; font-weight: 700; color: var(--dark-900);">Select Time Slot</div>
+                    <div style="font-size: 11px; color: var(--emerald-600); font-weight: 600;">In Progress</div>
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px; opacity: 0.6;">
+                <div
+                    style="width: 28px; height: 28px; border-radius: 50%; background: var(--bg-surface-elevated); color: var(--text-muted); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700;">
+                    2</div>
+                <div>
+                    <div style="font-size: 12.5px; font-weight: 700; color: var(--dark-900);">Player Information</div>
+                    <div style="font-size: 11px; color: var(--text-muted);">Step 2</div>
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px; opacity: 0.6;">
+                <div
+                    style="width: 28px; height: 28px; border-radius: 50%; background: var(--bg-surface-elevated); color: var(--text-muted); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700;">
+                    3</div>
+                <div>
+                    <div style="font-size: 12.5px; font-weight: 700; color: var(--dark-900);">Razorpay Payment</div>
+                    <div style="font-size: 11px; color: var(--text-muted);">Confirmation</div>
+                </div>
+            </div>
         </div>
 
         <div class="booking-grid">
             <!-- Left Panel: Slot Selector -->
             <div class="slot-selection-panel">
-                <span class="section-eyebrow">Reservation</span>
-                <h1 style="font-family: var(--font-heading); font-size: 24px; font-weight: 700; margin: 4px 0 20px;">
-                    Select Date & Time
+                <span class="section-eyebrow">Interactive Scheduler</span>
+                <h1
+                    style="font-family: var(--font-display); font-size: 26px; font-weight: 800; margin: 4px 0 20px; color: var(--dark-900);">
+                    Select Match Date &amp; Time Slot
                 </h1>
 
                 {% if form.non_field_errors %}
-                    <div class="flash-message flash-error" style="margin-bottom: 18px;">
-                        {% for err in form.non_field_errors %}<div>{{ err }}</div>{% endfor %}
-                    </div>
+                <div class="flash-message flash-error" style="margin-bottom: 20px;">
+                    {% for err in form.non_field_errors %}<div>{{ err }}</div>{% endfor %}
+                </div>
                 {% endif %}
 
                 <form method="post" id="turf-booking-form">
@@ -37,9 +70,10 @@
                         {{ form.date.errors }}
                     </div>
 
-                    <div class="form-group" style="margin-top: 20px;">
-                        <div style="display: flex; justify-content: space-between; align-items: baseline;">
-                            <label>Time Slot</label>
+                    <div class="form-group" style="margin-top: 24px;">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 8px;">
+                            <label>Pick Available Time Slot</label>
                             <div class="slot-legend" style="margin: 0;">
                                 <div class="slot-legend-item"><span class="legend-dot dot-avail"></span> Available</div>
                                 <div class="slot-legend-item"><span class="legend-dot dot-booked"></span> Reserved</div>
@@ -58,26 +92,41 @@
                         </div>
                     </div>
 
-                    <div class="form-group" style="margin-top: 20px;">
-                        <label for="{{ form.notes.id_for_label }}">Notes (Optional)</label>
+                    <div class="form-group" style="margin-top: 24px;">
+                        <label for="{{ form.notes.id_for_label }}">Match Notes or Special Requests (Optional)</label>
                         {{ form.notes }}
                         {{ form.notes.errors }}
                     </div>
 
-                    <button type="submit" id="submit-booking-btn" class="btn btn-primary btn-block" style="margin-top: 20px;" disabled>
-                        Select a Time Slot to Confirm
+                    <button type="submit" id="submit-booking-btn" class="btn btn-primary btn-block btn-lg"
+                        style="margin-top: 24px;" disabled>
+                        Select a Time Slot to Proceed
                     </button>
+
+                    <div
+                        style="font-size: 12px; color: var(--text-muted); text-align: center; margin-top: 12px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                        <span>🔒 256-bit SSL Protected</span> &bull; <span>Instant Slot Lock Guarantee</span>
+                    </div>
                 </form>
             </div>
 
             <!-- Right Panel: Sticky Booking Summary -->
             <div>
                 <div class="booking-summary-card">
-                    <h3 style="font-family: var(--font-heading); font-size: 17px; margin-bottom: 16px; font-weight: 700;">Summary</h3>
+                    <h3
+                        style="font-family: var(--font-display); font-size: 18px; margin-bottom: 18px; font-weight: 800; color: var(--dark-900);">
+                        Reservation Summary
+                    </h3>
 
-                    <div style="margin-bottom: 16px;">
-                        <strong style="font-size: 15px; display: block;">{{ turf.name }}</strong>
-                        <span style="font-size: 13px; color: var(--text-muted);">{{ turf.location }}</span>
+                    <div
+                        style="margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid var(--border-light);">
+                        <strong
+                            style="font-size: 16px; display: block; color: var(--dark-900); font-family: var(--font-heading);">{{
+                            turf.name }}</strong>
+                        <span style="font-size: 13px; color: var(--text-muted); display: block; margin-top: 2px;">{{
+                            turf.location }}</span>
+                        <span class="turf-surface-pill" style="margin-top: 8px; margin-bottom: 0;">{{ turf.surface_type
+                            }}</span>
                     </div>
 
                     <div class="summary-row">
@@ -86,28 +135,33 @@
                     </div>
 
                     <div class="summary-row">
-                        <span style="color: var(--text-muted);">Date</span>
+                        <span style="color: var(--text-muted);">Match Date</span>
                         <strong id="summary-date">—</strong>
                     </div>
 
                     <div class="summary-row">
                         <span style="color: var(--text-muted);">Time Slot</span>
-                        <strong id="summary-slot">—</strong>
+                        <strong id="summary-slot" style="color: var(--emerald-600);">—</strong>
                     </div>
 
                     <div class="summary-row">
-                        <span style="color: var(--text-muted);">Slot Rate</span>
+                        <span style="color: var(--text-muted);">Rate per Slot</span>
                         <span>₹{{ turf.price|floatformat:0 }}</span>
                     </div>
 
-                    <div class="summary-row total">
-                        <span>Total Due</span>
-                        <span>₹{{ turf.price|floatformat:0 }}</span>
+                    <div class="summary-total">
+                        <span style="font-weight: 700; font-size: 15px; color: var(--dark-900);">Total Due</span>
+                        <span
+                            style="font-family: var(--font-display); font-size: 24px; font-weight: 900; color: var(--emerald-700);">
+                            ₹{{ turf.price|floatformat:0 }}
+                        </span>
                     </div>
 
-                    <p style="font-size: 12px; color: var(--text-muted); margin-top: 16px; line-height: 1.5;">
-                        Slots are reserved immediately upon confirmation.
-                    </p>
+                    <div
+                        style="margin-top: 18px; background: var(--bg-surface-elevated); padding: 12px 14px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); font-size: 12px; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 16px; color: var(--emerald-600);">⚡</span>
+                        <span>Pay securely via Razorpay (UPI, GPay, Cards, Netbanking).</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -115,8 +169,10 @@
 </section>
 
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-    const turfId = {{ turf.pk }};
+    document.addEventListener("DOMContentLoaded", function () {
+        const turfId = {{ turf.pk }
+    };
+    const turfPrice = "{{ turf.price|floatformat:0 }}";
     const dateInput = document.getElementById("booking-date-input");
     const selectElem = document.getElementById("time-slot-select");
     const container = document.getElementById("interactive-slots");
@@ -139,16 +195,16 @@ document.addEventListener("DOMContentLoaded", function() {
             const opt = selectElem.options[selectElem.selectedIndex];
             summarySlot.textContent = opt ? opt.text : "—";
             submitBtn.disabled = false;
-            submitBtn.textContent = `Confirm Reservation (${summarySlot.textContent})`;
+            submitBtn.textContent = `Proceed to Checkout (₹${turfPrice}) →`;
         } else {
             summarySlot.textContent = "—";
             submitBtn.disabled = true;
-            submitBtn.textContent = "Select a Time Slot to Confirm";
+            submitBtn.textContent = "Select a Time Slot to Proceed";
         }
     }
 
     function loadSlotsForDate(date) {
-        container.innerHTML = "<div style='grid-column: 1/-1; text-align: center; padding: 18px; color: var(--text-muted); font-size: 13px;'>Checking availability...</div>";
+        container.innerHTML = "<div style='grid-column: 1/-1; text-align: center; padding: 20px; color: var(--text-muted); font-size: 13px;'>Checking real-time slot availability...</div>";
         selectElem.value = "";
         updateSummary();
 
@@ -157,7 +213,7 @@ document.addEventListener("DOMContentLoaded", function() {
             .then(data => {
                 container.innerHTML = "";
                 if (!data.slots || data.slots.length === 0) {
-                    container.innerHTML = "<div style='grid-column: 1/-1; color: var(--text-muted); font-size: 13px;'>No time slots configured.</div>";
+                    container.innerHTML = "<div style='grid-column: 1/-1; color: var(--text-muted); font-size: 13px; text-align: center;'>No time slots configured.</div>";
                     return;
                 }
 
@@ -178,12 +234,12 @@ document.addEventListener("DOMContentLoaded", function() {
                     chip.dataset.slotId = slot.id;
                     chip.dataset.label = slot.label;
                     chip.innerHTML = `
-                        <span class="slot-chip-time">${slot.label}</span>
-                        <span class="slot-chip-status">${statusText}</span>
+                        <div style="font-size: 13px; font-weight: 700; margin-bottom: 2px;">${slot.label}</div>
+                        <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.85;">${statusText}</div>
                     `;
 
                     if (slot.is_available) {
-                        chip.addEventListener("click", function() {
+                        chip.addEventListener("click", function () {
                             container.querySelectorAll(".slot-chip").forEach(c => c.classList.remove("selected"));
                             chip.classList.add("selected");
                             selectElem.value = slot.id;
@@ -205,7 +261,7 @@ document.addEventListener("DOMContentLoaded", function() {
             });
     }
 
-    dateInput.addEventListener("change", function() {
+    dateInput.addEventListener("change", function () {
         loadSlotsForDate(this.value);
     });
 
